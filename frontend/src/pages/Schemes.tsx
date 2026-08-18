@@ -41,9 +41,222 @@ interface SchemeEvaluationResult {
   missing_input_criteria: string[];
 }
 
+const INITIAL_SCHEMES: Scheme[] = [
+  {
+    id: "1",
+    title: "ADIP Scheme (Assistance to Disabled Persons for Purchase/Fitting of Aids & Appliances)",
+    description: "Provides grants to assist needy disabled persons in procuring durable, sophisticated, and scientifically manufactured standard aids and appliances (digital hearing aids, smart canes, laptops for deaf/blind).",
+    department: "Ministry of Social Justice and Empowerment, Central Govt",
+    benefits: "100% subsidy for family income up to Rs. 22,500/month. 50% subsidy for family income between Rs. 22,500 and Rs. 30,000/month.",
+    eligibility: "Indian citizen with 40%+ disability certificate. Monthly income under Rs. 30,000.",
+    documents: ["Aadhaar Card", "Disability Certificate (40%+)", "Income Certificate", "Photograph"],
+    state: "CENTRAL",
+    category: "ASSISTIVE TECHNOLOGY",
+    application_method: "Online",
+    official_url: "https://depwd.gov.in/adip-scheme/",
+    source_name: "DEPwD Official Portal",
+    status: "active"
+  },
+  {
+    id: "2",
+    title: "National Fellowship for Persons with Disabilities (NFPwD)",
+    description: "Provides financial fellowships to students with disabilities pursuing higher education research courses such as M.Phil. and Ph.D. in recognized Indian universities.",
+    department: "Department of Empowerment of Persons with Disabilities, Central Govt",
+    benefits: "Stipend of Rs. 31,000/month (JRF) / Rs. 35,000/month (SRF) + HRA and contingency grants.",
+    eligibility: "Indian student with 40%+ disability enrolled in full-time M.Phil/Ph.D.",
+    documents: ["Aadhaar Card", "Disability Certificate (40%+)", "University Admission Proof"],
+    state: "CENTRAL",
+    category: "EDUCATION",
+    application_method: "Online",
+    official_url: "https://depwd.gov.in/national-fellowship-for-pwd/",
+    source_name: "DEPwD Fellowship Portal",
+    status: "active"
+  },
+  {
+    id: "3",
+    title: "Unique Disability ID (UDID) National Swavlamban Card Services",
+    description: "Single nationwide smart identity card providing seamless access to all central & state disability schemes, healthcare concessions, and transit benefits.",
+    department: "Department of Empowerment of Persons with Disabilities, Central Govt",
+    benefits: "Universal medical validation, free/concessional rail and bus transport travel nationwide.",
+    eligibility: "All Indian citizens certified with 40%+ disability.",
+    documents: ["Medical Board Certificate", "Aadhaar Card", "Passport Photo"],
+    state: "CENTRAL",
+    category: "ASSISTIVE TECHNOLOGY",
+    application_method: "Online",
+    official_url: "https://www.swavlambancard.gov.in",
+    source_name: "Swavlamban Card Portal",
+    status: "active"
+  },
+  {
+    id: "4",
+    title: "Divyangjan Swavalamban Concessional Loan Scheme",
+    description: "Low-interest concessional micro-loans for starting self-employment ventures, small businesses, or vocational training.",
+    department: "National Handicapped Finance & Development Corp (NHFDC), Central Govt",
+    benefits: "Concessional loans up to Rs. 5,00,000 at low interest rates (5% to 8% p.a.). 1% rebate for women.",
+    eligibility: "Indian citizen aged 18+ with 40%+ certified disability.",
+    documents: ["UDID Card", "Business Plan", "Aadhaar Card"],
+    state: "CENTRAL",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "http://www.nhfdc.nic.in",
+    source_name: "NHFDC Portal",
+    status: "active"
+  },
+  {
+    id: "5",
+    title: "Deendayal Disabled Rehabilitation Scheme (DDRS)",
+    description: "Grant-in-aid support to NGOs for running special schools, vocational centers, and early intervention clinics for deaf and disabled children.",
+    department: "Ministry of Social Justice and Empowerment, Central Govt",
+    benefits: "Free special schooling, skill development, sign language therapy, and hostel accommodations.",
+    eligibility: "Children and young adults with disabilities across all Indian states.",
+    documents: ["Disability Certificate", "School Enrollment Form"],
+    state: "CENTRAL",
+    category: "EDUCATION",
+    application_method: "Offline/School Desk",
+    official_url: "https://depwd.gov.in/ddrs-scheme/",
+    source_name: "DEPwD Portal",
+    status: "active"
+  },
+  {
+    id: "6",
+    title: "Sanjay Gandhi Niradhar Anudan & Divyang Maintenance Allowance",
+    description: "State pension scheme in Maharashtra providing monthly financial sustenance to persons with disabilities.",
+    department: "Social Justice & Special Assistance Dept, Govt of Maharashtra",
+    benefits: "Monthly financial grant of Rs. 1,500/month directly transferred to beneficiary account.",
+    eligibility: "Resident of Maharashtra. Disability 40%+. Annual income under Rs. 50,000.",
+    documents: ["Maharashtra Domicile", "Aadhaar Card", "Disability Certificate"],
+    state: "MAHARASHTRA",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "https://sanjaygandhimaharashtra.gov.in",
+    source_name: "MahaOnline Portal",
+    status: "active"
+  },
+  {
+    id: "7",
+    title: "Delhi Financial Assistance to Persons with Special Needs",
+    description: "Delhi Government direct pension assistance for persons with disabilities living in NCT of Delhi.",
+    department: "Department of Social Welfare, Government of NCT of Delhi",
+    benefits: "Rs. 2,500/month direct pension allowance.",
+    eligibility: "Resident of Delhi (5+ yrs). Disability 40%+. Family income under Rs. 1,00,000/yr.",
+    documents: ["Delhi Domicile (5 Yrs)", "Disability Certificate", "Aadhaar Card"],
+    state: "DELHI",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "https://edistrict.delhigovt.nic.in",
+    source_name: "e-District Delhi",
+    status: "active"
+  },
+  {
+    id: "8",
+    title: "Tamil Nadu Monthly Maintenance Allowance for Differently Abled",
+    description: "Comprehensive maintenance allowance and free public transport passes across Tamil Nadu.",
+    department: "Dept for Welfare of Differently Abled Persons, Govt of Tamil Nadu",
+    benefits: "Monthly allowance of Rs. 2,000/month plus free RTC bus passes.",
+    eligibility: "Resident of Tamil Nadu. Disability percentage 40%+.",
+    documents: ["TN Smart Card / Ration Card", "Disability Certificate"],
+    state: "TAMIL NADU",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "https://www.scda.tn.gov.in",
+    source_name: "TN Welfare Portal",
+    status: "active"
+  },
+  {
+    id: "9",
+    title: "Karnataka Vikalangara Pension & Assistive Equipment Scheme",
+    description: "State-wide social security pension and assistive equipment distribution scheme for PwDs in Karnataka.",
+    department: "Directorate for Empowerment of Differently Abled, Govt of Karnataka",
+    benefits: "Rs. 1,200 to Rs. 2,000/month based on severity, plus free hearing aid kits.",
+    eligibility: "Karnataka domicile resident with 40%+ disability.",
+    documents: ["Karnataka Domicile", "UDID Card", "Aadhaar Card"],
+    state: "KARNATAKA",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "https://sevasindhu.karnataka.gov.in",
+    source_name: "Seva Sindhu Portal",
+    status: "active"
+  },
+  {
+    id: "10",
+    title: "UP Divyangjan Pension & Shadi Protsahan Puraskar Yojana",
+    description: "Direct benefit pension allowance and marriage financial grant for differently abled residents of Uttar Pradesh.",
+    department: "Divyangjan Empowerment Department, Govt of Uttar Pradesh",
+    benefits: "Monthly pension of Rs. 1,000/month + marriage incentive grant up to Rs. 35,000.",
+    eligibility: "Resident of UP aged 18+, BPL income status.",
+    documents: ["UP Domicile", "Disability Certificate", "BPL Certificate"],
+    state: "UTTAR PRADESH",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "http://sspy-up.gov.in",
+    source_name: "SSPY UP Portal",
+    status: "active"
+  },
+  {
+    id: "11",
+    title: "West Bengal Manabik Pension Scheme for PwD",
+    description: "Monthly pension grant for persons with disabilities residing in West Bengal.",
+    department: "Dept of Women & Child Development & Social Welfare, Govt of West Bengal",
+    benefits: "Rs. 1,000/month direct pension to beneficiary bank accounts.",
+    eligibility: "Resident of West Bengal with 50%+ certified disability.",
+    documents: ["WB Domicile Proof", "Disability Certificate (50%+)", "Bank Passbook"],
+    state: "WEST BENGAL",
+    category: "FINANCIAL AID",
+    application_method: "Online/Offline",
+    official_url: "https://wb.gov.in",
+    source_name: "WB Social Welfare Portal",
+    status: "active"
+  },
+  {
+    id: "12",
+    title: "Gujarat Divyang Sahay Yojana (Direct Financial Aid)",
+    description: "State-funded direct benefit transfer scheme in Gujarat to support severely disabled individuals with monthly pension grants.",
+    department: "Social Justice and Empowerment Department, Government of Gujarat",
+    benefits: "Direct pension allowance of Rs. 1,000 per month deposited to Jan-Dhan account.",
+    eligibility: "Resident of Gujarat. Age 18-79. Income BPL threshold. Disability 80%+.",
+    documents: ["Gujarat Domicile Proof", "Aadhaar Card", "Disability Certificate (80%+)"],
+    state: "GUJARAT",
+    category: "FINANCIAL AID",
+    application_method: "Online/Offline",
+    official_url: "http://sje.gujarat.gov.in/",
+    source_name: "SJE Gujarat Portal",
+    status: "active"
+  },
+  {
+    id: "13",
+    title: "Kerala Swasraya Self-Employment Scheme for Divyangjan",
+    description: "Financial assistance for single parents and disabled individuals to start micro enterprises.",
+    department: "Social Justice Department, Government of Kerala",
+    benefits: "One-time financial grant up to Rs. 35,000 for small business setups.",
+    eligibility: "Kerala resident with 70%+ disability and BPL status.",
+    documents: ["Kerala Domicile", "Disability Certificate", "Project Plan"],
+    state: "KERALA",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "http://www.sjd.kerala.gov.in",
+    source_name: "SJD Kerala Portal",
+    status: "active"
+  },
+  {
+    id: "14",
+    title: "Rajasthan Chief Minister Vishesh Yogyajan Samman Pension",
+    description: "Social security monthly pension scheme for persons with disabilities in Rajasthan.",
+    department: "Social Justice and Empowerment Department, Govt of Rajasthan",
+    benefits: "Rs. 750 to Rs. 1,500/month depending on age and disability severity.",
+    eligibility: "Permanent resident of Rajasthan with 40%+ disability.",
+    documents: ["Jan Aadhaar Card", "Disability Certificate", "Bank Account Details"],
+    state: "RAJASTHAN",
+    category: "FINANCIAL AID",
+    application_method: "Online",
+    official_url: "https://ssp.rajasthan.gov.in",
+    source_name: "SSP Rajasthan Portal",
+    status: "active"
+  }
+];
+
 export default function Schemes() {
-  const [schemes, setSchemes] = useState<Scheme[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [schemes, setSchemes] = useState<Scheme[]>(INITIAL_SCHEMES);
+  const [loading, setLoading] = useState(false);
 
   // View control
   const [activeTab, setActiveTab] = useState<"directory" | "wizard">("directory");
@@ -78,7 +291,9 @@ export default function Schemes() {
   useEffect(() => {
     fetchFromApi<Scheme[]>("/schemes")
       .then((data) => {
-        setSchemes(data);
+        if (data && data.length > 0) {
+          setSchemes(data);
+        }
         setLoading(false);
       })
       .catch((err) => {

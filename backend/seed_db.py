@@ -383,6 +383,153 @@ def seed():
         db.flush()
         db.add(models.SchemeEligibility(scheme_id=scheme7.id, criteria_key="state", criteria_value="Karnataka"))
 
+        # Scheme 8: NHFDC Swavalamban Kendra Loans (Central)
+        scheme8 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Divyangjan Swavalamban Concessional Loan Scheme",
+            description="Low-interest concessional micro-loans for starting self-employment ventures, small businesses, or vocational training for disabled individuals.",
+            department="National Handicapped Finance and Development Corporation (NHFDC), Central Govt",
+            benefits="Concessional loans up to Rs. 5,00,000 at low interest rates (5% to 8% p.a.). Special 1% rebate for female beneficiaries.",
+            eligibility="Indian citizen aged 18 years or above with 40%+ certified disability and income under Rs. 3,00,000/year.",
+            documents=["UDID Card", "Business Proposal / Plan", "Aadhaar Card", "Income & Domicile Proof"],
+            state="Central",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="http://www.nhfdc.nic.in",
+            source_name="NHFDC Official Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme8)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme8.id, criteria_key="state", criteria_value="Central"))
+
+        # Scheme 9: Unique Disability ID (UDID) Swavlamban Pass (Central)
+        scheme9 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Unique Disability ID (UDID) National Swavlamban Card Services",
+            description="Single nationwide smart identity card providing seamless access to all central & state disability schemes, healthcare concessions, and transit benefits.",
+            department="Department of Empowerment of Persons with Disabilities, Central Govt",
+            benefits="Universal medical certificate validation, free/concessional rail and bus transport travel nationwide, simplified portal applications.",
+            eligibility="All Indian citizens certified with 40% or more disability by an authorized medical board.",
+            documents=["Medical Board Certificate", "Aadhaar Card", "Passport Photo"],
+            state="Central",
+            category="Assistive Technology",
+            application_method="Online",
+            official_url="https://www.swavlambancard.gov.in",
+            source_name="Swavlamban Card Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme9)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme9.id, criteria_key="state", criteria_value="Central"))
+
+        # Scheme 10: Uttar Pradesh Divyangjan Pension Yojana
+        scheme10 = models.Scheme(
+            id=uuid.uuid4(),
+            title="UP Divyangjan Pension & Shadi Protsahan Puraskar Yojana",
+            description="Direct benefit pension allowance and marriage financial grant for differently abled residents of Uttar Pradesh.",
+            department="Divyangjan Empowerment Department, Govt of Uttar Pradesh",
+            benefits="Monthly pension of Rs. 1,000/month plus one-time marriage incentive grant of up to Rs. 35,000.",
+            eligibility="Permanent resident of UP aged 18+, annual income below BPL threshold (Rs. 46,080 rural, Rs. 56,460 urban).",
+            documents=["UP Domicile Certificate", "Disability Certificate (40%+)", "BPL Ration Card / Income Certificate"],
+            state="Uttar Pradesh",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="http://sspy-up.gov.in",
+            source_name="SSPY UP Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme10)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme10.id, criteria_key="state", criteria_value="Uttar Pradesh"))
+
+        # Scheme 11: West Bengal Manabik Pension Scheme
+        scheme11 = models.Scheme(
+            id=uuid.uuid4(),
+            title="West Bengal Manabik Pension Scheme for PwD",
+            description="Monthly pension grant for persons with disabilities residing in West Bengal.",
+            department="Department of Women & Child Development & Social Welfare, Govt of West Bengal",
+            benefits="Rs. 1,000/month direct pension to beneficiary bank accounts.",
+            eligibility="Resident of West Bengal with 50%+ certified disability and monthly family income below Rs. 10,000.",
+            documents=["WB Domicile Proof", "Disability Certificate (50%+)", "Bank Passbook"],
+            state="West Bengal",
+            category="Financial Aid",
+            application_method="Online/Offline",
+            official_url="https://wb.gov.in",
+            source_name="WB Social Welfare Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme11)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme11.id, criteria_key="state", criteria_value="West Bengal"))
+
+        # Scheme 12: Deendayal Disabled Rehabilitation Scheme (DDRS)
+        scheme12 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Deendayal Disabled Rehabilitation Scheme (DDRS)",
+            description="Provides grant-in-aid support to non-governmental organizations to run special schools, vocational centers, and early intervention clinics for deaf and disabled children.",
+            department="Ministry of Social Justice and Empowerment, Central Govt",
+            benefits="Free schooling, skill development, sign language therapy, and hostel accommodations in accredited special schools.",
+            eligibility="Children and young adults with disabilities across all Indian states.",
+            documents=["Disability Certificate", "School Enrollment Form", "Aadhaar Card"],
+            state="Central",
+            category="Education",
+            application_method="Offline/School Desk",
+            official_url="https://depwd.gov.in/ddrs-scheme/",
+            source_name="DEPwD Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme12)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme12.id, criteria_key="state", criteria_value="Central"))
+
+        # Scheme 13: Kerala Swasraya Scheme for PwD
+        scheme13 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Kerala Swasraya Self-Employment Scheme for Divyangjan",
+            description="Financial assistance for single parents, mothers of severely disabled children, and disabled individuals to start micro enterprises.",
+            department="Social Justice Department, Government of Kerala",
+            benefits="One-time financial grant up to Rs. 35,000 for setting up small shops, handicraft centers, or digital workstations.",
+            eligibility="Kerala resident with 70%+ disability or parent of severely disabled child. BPL income status.",
+            documents=["Kerala Domicile", "Disability Certificate", "BPL Certificate", "Project Plan"],
+            state="Kerala",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="http://www.sjd.kerala.gov.in",
+            source_name="SJD Kerala Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme13)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme13.id, criteria_key="state", criteria_value="Kerala"))
+
+        # Scheme 14: Rajasthan Vishesh Yogyajan Samman Pension
+        scheme14 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Rajasthan Chief Minister Vishesh Yogyajan Samman Pension",
+            description="Social security monthly pension scheme for persons with disabilities in Rajasthan.",
+            department="Social Justice and Empowerment Department, Govt of Rajasthan",
+            benefits="Rs. 750 to Rs. 1,500/month depending on age and disability severity.",
+            eligibility="Permanent resident of Rajasthan with 40%+ certified disability.",
+            documents=["Jan Aadhaar Card", "Disability Certificate", "Bank Account Details"],
+            state="Rajasthan",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="https://ssp.rajasthan.gov.in",
+            source_name="SSP Rajasthan Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme14)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme14.id, criteria_key="state", criteria_value="Rajasthan"))
+
         print("Seeding demo institutions and metrics...")
         # 1. KP Gujarat University Hospital (healthcare)
         inst1 = models.Institution(
