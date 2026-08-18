@@ -1,0 +1,16 @@
+# Backend secrets & env
+.env
+*.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Databases
+*.db
+*.sqlite3
+sanket_local.db
