@@ -229,7 +229,7 @@ def seed():
         db.flush()
 
         print("Seeding government schemes...")
-        # Scheme 1: ADIP
+        # Scheme 1: ADIP (Central)
         scheme1 = models.Scheme(
             id=uuid.uuid4(),
             title="ADIP Scheme (Assistance to Disabled Persons for Purchase/Fitting of Aids and Appliances)",
@@ -252,7 +252,7 @@ def seed():
         db.add(models.SchemeEligibility(scheme_id=scheme1.id, criteria_key="max_income", criteria_value="30000"))
         db.add(models.SchemeEligibility(scheme_id=scheme1.id, criteria_key="disability_category", criteria_value="hearing_impairment"))
 
-        # Scheme 2: NFPwD
+        # Scheme 2: NFPwD (Central)
         scheme2 = models.Scheme(
             id=uuid.uuid4(),
             title="National Fellowship for Persons with Disabilities (NFPwD)",
@@ -298,6 +298,90 @@ def seed():
         db.add(models.SchemeEligibility(scheme_id=scheme3.id, criteria_key="state", criteria_value="Gujarat"))
         db.add(models.SchemeEligibility(scheme_id=scheme3.id, criteria_key="min_age", criteria_value="18"))
         db.add(models.SchemeEligibility(scheme_id=scheme3.id, criteria_key="max_age", criteria_value="79"))
+
+        # Scheme 4: Maharashtra Divyangjan Subsistence Pension
+        scheme4 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Sanjay Gandhi Niradhar Anudan Yojana & Divyang Maintenance Allowance",
+            description="State pension scheme in Maharashtra providing monthly financial sustenance to persons with disabilities.",
+            department="Social Justice & Special Assistance Department, Govt of Maharashtra",
+            benefits="Monthly financial grant of Rs. 1,500/month directly transferred to beneficiary accounts.",
+            eligibility="Permanent resident of Maharashtra. Disability percentage 40%+. Annual income under Rs. 50,000.",
+            documents=["Maharashtra Domicile Certificate", "Aadhaar Card", "Disability Certificate (40%+)", "Income Certificate"],
+            state="Maharashtra",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="https://sanjaygandhimaharashtra.gov.in",
+            source_name="MahaOnline Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme4)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme4.id, criteria_key="state", criteria_value="Maharashtra"))
+
+        # Scheme 5: Delhi Disability Pension Scheme
+        scheme5 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Delhi Financial Assistance to Persons with Special Needs",
+            description="Delhi Government direct pension assistance for persons with disabilities living in the National Capital Territory of Delhi.",
+            department="Department of Social Welfare, Government of NCT of Delhi",
+            benefits="Rs. 2,500/month direct pension allowance.",
+            eligibility="Resident of Delhi for at least 5 years. Disability percentage 40%+. Family income below Rs. 1,00,000/year.",
+            documents=["Delhi Residence Proof (5 Years)", "Disability Certificate", "Aadhaar Card", "Bank Account Details"],
+            state="Delhi",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="https://edistrict.delhigovt.nic.in",
+            source_name="e-District Delhi",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme5)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme5.id, criteria_key="state", criteria_value="Delhi"))
+
+        # Scheme 6: Tamil Nadu Differently Abled Maintenance Allowance
+        scheme6 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Tamil Nadu Monthly Maintenance Allowance for Differently Abled Persons",
+            description="Comprehensive maintenance allowance provided by Tamil Nadu government for severely differently abled citizens.",
+            department="Department for Welfare of Differently Abled Persons, Govt of Tamil Nadu",
+            benefits="Monthly allowance of Rs. 2,000/month plus free RTC bus passes across Tamil Nadu.",
+            eligibility="Resident of Tamil Nadu. Disability percentage 40%+.",
+            documents=["TN Smart Card / Ration Card", "Disability Certificate", "Aadhaar Card"],
+            state="Tamil Nadu",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="https://www.scda.tn.gov.in",
+            source_name="TN Welfare Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme6)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme6.id, criteria_key="state", criteria_value="Tamil Nadu"))
+
+        # Scheme 7: Karnataka Vikalangara Monthly Pension Scheme
+        scheme7 = models.Scheme(
+            id=uuid.uuid4(),
+            title="Karnataka Vikalangara Pension & Assistive Equipment Scheme",
+            description="State-wide social security pension and assistive equipment distribution scheme for PwDs in Karnataka.",
+            department="Directorate for the Empowerment of Differently Abled, Govt of Karnataka",
+            benefits="Rs. 1,200 to Rs. 2,000/month based on disability severity, plus free hearing aid kits.",
+            eligibility="Karnataka domicile resident with 40%+ certified disability.",
+            documents=["Karnataka Domicile Certificate", "Disability ID Card (UDID)", "Aadhaar Card"],
+            state="Karnataka",
+            category="Financial Aid",
+            application_method="Online",
+            official_url="https://sevasindhu.karnataka.gov.in",
+            source_name="Seva Sindhu Portal",
+            last_verified_at=datetime.utcnow(),
+            status="active"
+        )
+        db.add(scheme7)
+        db.flush()
+        db.add(models.SchemeEligibility(scheme_id=scheme7.id, criteria_key="state", criteria_value="Karnataka"))
 
         print("Seeding demo institutions and metrics...")
         # 1. KP Gujarat University Hospital (healthcare)

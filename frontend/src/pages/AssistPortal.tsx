@@ -49,31 +49,43 @@ export default function AssistPortal() {
 
   // Static Institution Profile data
   const institutionDetails: Record<string, { title: string; type: string; address: string; workflows: string[] }> = {
-    "kpgu-hospital": {
-      title: "KP Gujarat University Hospital",
+    "aiims-delhi": {
+      title: "AIIMS New Delhi — Inclusive OPD Centre",
       type: "Hospital / Healthcare",
-      address: "VIP Road, Vadodara, Gujarat - 390019",
+      address: "Ansari Nagar, New Delhi - 110029",
       workflows: ["departments", "appointment", "documents", "directions", "assistance"]
     },
-    "gandhinagar-univ": {
-      title: "Gandhinagar University Campus",
+    "aiish-mysore": {
+      title: "All India Institute of Speech & Hearing (AIISH)",
+      type: "Hospital & Research",
+      address: "Manasagangothri, Mysore, Karnataka - 570006",
+      workflows: ["departments", "appointment", "documents", "assistance"]
+    },
+    "nimhans-bengaluru": {
+      title: "NIMHANS Rehabilitation Center",
+      type: "Hospital / Mental Health & Rehab",
+      address: "Hosur Road, Bengaluru, Karnataka - 560029",
+      workflows: ["departments", "appointment", "directions", "assistance"]
+    },
+    "iit-bombay": {
+      title: "IIT Bombay Disability Resource Centre",
       type: "College / Education",
-      address: "Sarkhej-Gandhinagar Highway, Gujarat - 382421",
+      address: "Powai, Mumbai, Maharashtra - 400076",
       workflows: ["admissions", "scholarships", "exams", "notices"]
     },
-    "collector-office": {
-      title: "District Collector Office, Vadodara",
+    "collectorate-office": {
+      title: "District Collectorate & Social Welfare Office",
       type: "Government Office / Civic",
-      address: "Kothi Kacheri Compound, Vadodara, Gujarat - 390001",
+      address: "Pan-India Civic Complex, New Delhi / District HQs",
       workflows: ["services", "process", "token", "status"]
     }
   };
 
   const currentInst = institutionDetails[slug || ""] || {
-    title: "Demo Civic Center",
-    type: "Public Services",
-    address: "Central Ward, Vadodara, Gujarat",
-    workflows: ["services", "documents", "token"]
+    title: "AIIMS New Delhi — Inclusive OPD Centre",
+    type: "Public Services / Healthcare",
+    address: "Ansari Nagar, New Delhi - 110029",
+    workflows: ["departments", "appointment", "documents", "directions", "assistance"]
   };
 
   useEffect(() => {
@@ -138,9 +150,9 @@ export default function AssistPortal() {
     setLoadingToken(true);
     setTimeout(() => {
       let token = "";
-      if (slug === "kpgu-hospital") {
+      if (slug === "aiims-delhi" || slug === "aiish-mysore" || slug === "nimhans-bengaluru" || slug === "kpgu-hospital") {
         token = `H-${Math.floor(Math.random() * 800) + 100}`;
-      } else if (slug === "gandhinagar-univ") {
+      } else if (slug === "iit-bombay" || slug === "gandhinagar-univ") {
         token = `EDU-${Math.floor(Math.random() * 800) + 100}`;
       } else {
         token = `GOVT-${Math.floor(Math.random() * 800) + 100}`;
@@ -234,7 +246,7 @@ export default function AssistPortal() {
             <div className="flex-1 p-6 sm:p-8">
               
               {/* HOSPITAL WORKFLOWS */}
-              {slug === "kpgu-hospital" && (
+              {(slug === "aiims-delhi" || slug === "aiish-mysore" || slug === "nimhans-bengaluru" || slug === "kpgu-hospital" || !slug) && (
                 <div className="space-y-6">
                   
                   {/* Departments */}
@@ -418,7 +430,7 @@ export default function AssistPortal() {
               )}
 
               {/* COLLEGE WORKFLOWS */}
-              {slug === "gandhinagar-univ" && (
+              {(slug === "iit-bombay" || slug === "gandhinagar-univ") && (
                 <div className="space-y-6">
                   
                   {/* Admissions */}
@@ -608,7 +620,7 @@ export default function AssistPortal() {
               )}
 
               {/* GOVERNMENT OFFICE WORKFLOWS */}
-              {slug === "collector-office" && (
+              {(slug === "collectorate-office" || slug === "collector-office") && (
                 <div className="space-y-6">
                   
                   {/* Service Selection */}

@@ -54,25 +54,39 @@ export default function Assist() {
   // Static Institution Directory
   const institutions: InstitutionItem[] = [
     {
-      slug: "kpgu-hospital",
-      name: "KP Gujarat University Hospital",
+      slug: "aiims-delhi",
+      name: "AIIMS New Delhi — Inclusive OPD Centre",
       category: "hospital",
-      location: "Vadodara, Gujarat",
-      description: "Simplified outpatient check-in, department queue trackers, and step-by-step hospital room directions."
+      location: "New Delhi",
+      description: "Simplified outpatient check-in, live ISL video queue trackers, and accessible department navigation."
     },
     {
-      slug: "gandhinagar-univ",
-      name: "Gandhinagar University Campus",
+      slug: "aiish-mysore",
+      name: "All India Institute of Speech and Hearing (AIISH)",
+      category: "hospital",
+      location: "Mysore, Karnataka",
+      description: "Premier speech & hearing diagnostic center, audiology grants, and early intervention sign counseling."
+    },
+    {
+      slug: "nimhans-bengaluru",
+      name: "NIMHANS Special Rehabilitation Wing",
+      category: "hospital",
+      location: "Bengaluru, Karnataka",
+      description: "Specialized assistive rehabilitation care, neuro-divergent accommodation support, and token queues."
+    },
+    {
+      slug: "iit-bombay",
+      name: "IIT Bombay Disability Resource Centre",
       category: "college",
-      location: "Gandhinagar, Gujarat",
-      description: "Student admission slots booking, scholarship document checklists, and scribe request forms for examinations."
+      location: "Mumbai, Maharashtra",
+      description: "Student examination scribe allocation, academic braille/ISL transcript software, and hostel accessibility."
     },
     {
-      slug: "collector-office",
-      name: "District Collector Office, Vadodara",
+      slug: "collectorate-office",
+      name: "District Collectorate & Social Welfare Office",
       category: "government",
-      location: "Vadodara, Gujarat",
-      description: "Disability pension registrations, verification timelines, and civic counter token queue managers."
+      location: "Pan-India / Municipal",
+      description: "Disability pension registrations, UDID card verification timelines, and civic counter token queue managers."
     }
   ];
 

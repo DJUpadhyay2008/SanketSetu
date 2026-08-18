@@ -56,7 +56,7 @@ export default function Schemes() {
   // Wizard Eligibility Profile State
   const [profile, setProfile] = useState({
     age: "",
-    state: "Gujarat",
+    state: "CENTRAL",
     student: false,
     income: "",
     disability_category: "hearing_impairment",
@@ -163,7 +163,11 @@ export default function Schemes() {
   });
 
   const categories = ["ALL", "ASSISTIVE TECHNOLOGY", "EDUCATION", "FINANCIAL AID"];
-  const states = ["ALL", "CENTRAL", "GUJARAT"];
+  const states = [
+    "ALL", "CENTRAL", "ANDHRA PRADESH", "ASSAM", "BIHAR", "DELHI", "GUJARAT", 
+    "HARYANA", "KARNATAKA", "KERALA", "MADHYA PRADESH", "MAHARASHTRA", 
+    "PUNJAB", "RAJASTHAN", "TAMIL NADU", "TELANGANA", "UTTAR PRADESH", "WEST BENGAL"
+  ];
 
   return (
     <div className="space-y-8 py-2">
@@ -362,12 +366,11 @@ export default function Schemes() {
                       <select
                         value={profile.state}
                         onChange={(e) => setProfile(prev => ({ ...prev, state: e.target.value }))}
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-805 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 font-semibold"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-805 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 font-semibold uppercase"
                       >
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Karnataka">Karnataka</option>
+                        {states.filter(s => s !== "ALL").map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
                       </select>
                     </div>
 
@@ -692,10 +695,10 @@ export default function Schemes() {
             {/* Quick Prompts */}
             <div className="px-3 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 flex flex-wrap gap-1.5 justify-center">
               <button
-                onClick={() => handlePresetQuestion("Am I eligible for NFPwD if I'm a student from Gujarat?")}
+                onClick={() => handlePresetQuestion("Am I eligible for NFPwD if I'm a student in India?")}
                 className="text-[9px] font-bold px-2 py-1 rounded bg-slate-200/50 dark:bg-slate-800 text-slate-550 dark:text-slate-350 hover:bg-teal-500/10 hover:text-teal-500 transition-colors cursor-pointer"
               >
-                "Fellowship for student from Gujarat?"
+                "Fellowship for Indian students?"
               </button>
               <button
                 onClick={() => handlePresetQuestion("What benefits do I get under the ADIP scheme?")}
