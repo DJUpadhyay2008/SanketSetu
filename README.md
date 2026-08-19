@@ -55,7 +55,7 @@
               │ Supabase Client + SQLAlchemy ORM
 ┌─────────────▼───────────────────────────────────────────┐
 │              SUPABASE (PostgreSQL + Auth + Storage)        │
-│   PostgreSQL · Google OAuth · Supabase Storage            │
+│   PostgreSQL · Email & Password Auth · Supabase Storage   │
 │   Row Level Security · Realtime subscriptions             │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -73,7 +73,7 @@
 | **State Management** | TanStack Query + React Context |
 | **Backend** | Python 3.12, FastAPI, SQLAlchemy ORM |
 | **Database** | Supabase PostgreSQL |
-| **Auth** | Supabase Auth + Google OAuth 2.0 |
+| **Auth** | Supabase Auth (Email & Password) |
 | **Storage** | Supabase Storage |
 | **AI** | Google Gemini (via `google.genai`) |
 | **Offline** | Service Worker, Cache Storage, IndexedDB |
@@ -97,10 +97,6 @@ SUPABASE_KEY=your-supabase-key
 # PostgreSQL (Supabase direct URI)
 DATABASE_URL=postgresql://postgres:PASSWORD@db.YOUR_PROJECT.supabase.co:5432/postgres
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-secret
-
 # JWT
 JWT_SECRET=change-this-to-a-secure-random-string
 
@@ -122,21 +118,8 @@ VITE_API_BASE_URL=http://localhost:8000/api
 
 1. Go to [supabase.com](https://supabase.com) → **New Project**
 2. Copy **Project URL** + **anon key** from `Project Settings → API`
-3. Go to **Authentication → Providers → Google**
-4. Paste your Google OAuth Client ID + Secret
-5. Add `http://localhost:5173` to allowed redirect URLs
-
----
-
-## 🔑 Google OAuth Setup
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. APIs & Services → Credentials → **Create OAuth 2.0 Client ID**
-3. **Authorized JavaScript Origins**: `http://localhost:5173`
-4. **Authorized Redirect URIs**:
-   - `http://localhost:5173`
-   - `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
-5. Copy Client ID + Secret → Supabase Auth → Google Provider
+3. Go to **Authentication → Providers → Email**
+4. Enable Email / Password authentication
 
 ---
 
@@ -206,7 +189,7 @@ The seed script (`seed_db.py`) creates:
 | Lessons | 6+ lessons with quizzes, scenarios, practice prompts |
 | Schemes | ADIP Scheme (Central), Viklaang Pension Yojana (Gujarat) |
 | Institutions | AIIMS Delhi, Gujarat University, KPGU Vadodara (demo) |
-| Users | Created on first Google sign-in |
+| Users | Created on email registration/login |
 
 > ⚠️ All demo institution names and government scheme references are used for demonstration. Scheme data must be verified at official sources before actual use.
 
@@ -218,7 +201,7 @@ The seed script (`seed_db.py`) creates:
 
 | # | Step | Route | What to show |
 |---|---|---|---|
-| 1 | Google Login | `/` | Click "LOGIN" → Google OAuth → auto-redirect |
+| 1 | Email Login | `/` | Click "LOGIN" → enter email/password → sign in |
 | 2 | Dashboard | `/` | Personalized greeting, streak, learning card, leaderboard |
 | 3 | Start Learning | `/learn` | Healthcare ISL course → click lesson |
 | 4 | Complete Lesson | `/learn` | Quiz → scenario → XP awarded |

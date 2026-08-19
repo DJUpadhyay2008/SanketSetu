@@ -112,7 +112,7 @@ export default function Settings() {
             to="/"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            Sign In with Google
+            Sign In
           </Link>
         </div>
       )}
@@ -191,7 +191,7 @@ export default function Settings() {
           <SettingsRow
             icon={<LogOut className="h-4.5 w-4.5" />}
             label={loggingOut ? "Signing out…" : "Sign Out"}
-            description="You'll need to sign in again with Google to resume"
+            description="You'll need to sign in again with email and password to resume"
             onClick={handleLogout}
             danger
           />

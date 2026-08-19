@@ -18,7 +18,7 @@ class TestPhase2AuthAndProfile(unittest.TestCase):
 
     @patch("app.auth.dependencies.supabase_client.auth.get_user")
     def test_authenticated_profile_flow(self, mock_get_user):
-        # 1. Setup mock user details representing a successful Google sign-in redirect session
+        # 1. Setup mock user details representing a successful email sign-in session
         mock_user_id = str(uuid.uuid4())
         mock_email = f"test_{mock_user_id[:8]}@sanketsetu.in"
 
