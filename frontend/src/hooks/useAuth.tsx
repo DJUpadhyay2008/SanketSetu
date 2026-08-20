@@ -189,9 +189,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}` : undefined;
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
       });
       if (error) throw error;
       setUser(data.user);
