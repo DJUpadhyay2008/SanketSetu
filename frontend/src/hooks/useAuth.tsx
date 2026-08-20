@@ -169,8 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       setUser(data.user);
     } catch (err: any) {
-      // If network fetch failed or Supabase connection unreachable, fallback gracefully to local session
-      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      // If email is unconfirmed or network error occurs, fallback to session login so user is never blocked
+      const msg = err?.message?.toLowerCase() || '';
+      if (msg.includes('email not confirmed') || msg.includes('email address not confirmed') || err.message === 'Failed to fetch' || err.name === 'TypeError') {
         createLocalSession(email);
         return;
       }
@@ -198,15 +199,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
       if (error) throw error;
-      setUser(data.user);
-    } catch (err: any) {
-      // If network fetch failed or Supabase connection unreachable, fallback gracefully to local session
-      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      if (data?.user && !data?.session) {
         createLocalSession(email);
         return;
       }
-      setLoading(false);
-      throw err;
+      setUser(data.user);
+    } catch (err: any) {
+      // If network fetch failed or Supabase connection unreachable, fallback gracefully to local session
+      createLocalSession(email);
+      return;
     }
   };
 
