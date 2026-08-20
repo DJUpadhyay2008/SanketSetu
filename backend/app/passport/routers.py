@@ -42,9 +42,20 @@ class PassportDetail(BaseModel):
     interests: List[str]
     qr_code_data: str
 
+def mask_name(name: str) -> str:
+    parts = name.strip().split()
+    masked_parts = []
+    for part in parts:
+        if len(part) > 1:
+            masked_parts.append(part[0] + "*" * (len(part) - 1))
+        elif part:
+            masked_parts.append(part[0])
+    return " ".join(masked_parts)
+
 class VerificationResponse(BaseModel):
     is_valid: bool
     recipient_name: str
+    recipient_masked_name: Optional[str] = None
     avatar_url: Optional[str] = None
     gender: Optional[str] = None
     dob: Optional[str] = None
@@ -116,11 +127,11 @@ async def get_my_passport(
     # Add a mock certificate if they have none for demo/sandbox purposes
     if not certificates:
         certificates.append(CertificateItem(
-            id="88888888-8888-8888-8888-888888888888",
+            id="88888888-8888-4888-8888-88888888888f",
             course_name="Everyday ISL Greetings",
             issue_date=date.today(),
             grade="A+",
-            credential_url="/verify/88888888-8888-8888-8888-888888888888",
+            credential_url="/verify/88888888-8888-4888-8888-88888888888f",
             issuer="Sanket Setu Platform",
             skill="Basic Greetings"
         ))
@@ -156,36 +167,56 @@ async def verify_credential_public(
     """
     disclaimer = "Sanket Setu Platform Credential. This certificate verifies learning completion on the Sanket Setu digital portal. It does not represent or claim government certification or formal licensing."
     
-    # Check for demo credential IDs
-    if credential_id in ("00000000-0000-0000-0000-000000000000", "88888888-8888-8888-8888-888888888888") or credential_id.startswith("sanket") or credential_id.startswith("demo"):
-        return VerificationResponse(
-            is_valid=True,
-            recipient_name="Dutt",
-            avatar_url=None,
-            gender="Male",
-            dob="2008-03-08",
-            state="Gujarat",
-            city="Vadodara",
-            disability_category="Deaf / Hard of Hearing",
-            course_name="Everyday ISL Greetings",
-            issue_date=date.today(),
-            grade="A+",
-            issuer="Sanket Setu Platform",
-            skill="Basic Greetings",
-            verification_id=credential_id,
-            disclaimer=disclaimer
-        )
-
     try:
         cred_uuid = uuid.UUID(credential_id)
     except ValueError:
+        if credential_id.startswith("sanket") or credential_id.startswith("demo"):
+            demo_name = "Sanket Citizen"
+            return VerificationResponse(
+                is_valid=True,
+                recipient_name=demo_name,
+                recipient_masked_name=mask_name(demo_name),
+                avatar_url=None,
+                gender="Male",
+                dob="2008-03-08",
+                state="Gujarat",
+                city="Vadodara",
+                disability_category="Deaf / Hard of Hearing",
+                course_name="Everyday ISL Greetings",
+                issue_date=date.today(),
+                grade="A+",
+                issuer="Sanket Setu Platform",
+                skill="Basic Greetings",
+                verification_id=credential_id,
+                disclaimer=disclaimer
+            )
         raise HTTPException(status_code=400, detail="Invalid credential ID format")
 
     cred = db.query(models.Credential).filter(models.Credential.id == cred_uuid).first()
     if not cred:
+        if credential_id in ("00000000-0000-0000-0000-000000000000", "88888888-8888-4888-8888-88888888888f"):
+            demo_name = "Sanket Citizen"
+            return VerificationResponse(
+                is_valid=True,
+                recipient_name=demo_name,
+                recipient_masked_name=mask_name(demo_name),
+                avatar_url=None,
+                gender="Male",
+                dob="2008-03-08",
+                state="Gujarat",
+                city="Vadodara",
+                disability_category="Deaf / Hard of Hearing",
+                course_name="Everyday ISL Greetings",
+                issue_date=date.today(),
+                grade="A+",
+                issuer="Sanket Setu Platform",
+                skill="Basic Greetings",
+                verification_id=credential_id,
+                disclaimer=disclaimer
+            )
         raise HTTPException(status_code=404, detail="Credential not found or invalid")
 
-    user_name = "Dutt"
+    user_name = "Sanket Citizen"
     avatar_url = None
     gender = "Male"
     dob = "2008-03-08"
@@ -214,6 +245,7 @@ async def verify_credential_public(
     return VerificationResponse(
         is_valid=True,
         recipient_name=user_name,
+        recipient_masked_name=mask_name(user_name),
         avatar_url=avatar_url,
         gender=gender,
         dob=dob,

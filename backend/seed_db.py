@@ -682,11 +682,11 @@ def seed():
 
         # Seed real credentials for the demo user
         demo_cred = models.Credential(
-            id=uuid.UUID("88888888-8888-8888-8888-888888888888"),
+            id=uuid.UUID("88888888-8888-4888-8888-88888888888f"),
             user_id=demo_user_id,
             course_id=course1.id,
             grade="A+",
-            credential_url="/verify/88888888-8888-8888-8888-888888888888"
+            credential_url="/verify/88888888-8888-4888-8888-88888888888f"
         )
         db.add(demo_cred)
 

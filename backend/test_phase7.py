@@ -82,8 +82,8 @@ class TestPhase7IndexAndPassport(unittest.TestCase):
 
     def test_verify_credential_public(self):
         """Test public, masked credential verification endpoint."""
-        # Seeded credential ID: 88888888-8888-8888-8888-888888888888
-        cred_id = "88888888-8888-8888-8888-888888888888"
+        # Seeded credential ID: 88888888-8888-4888-8888-88888888888f
+        cred_id = "88888888-8888-4888-8888-88888888888f"
         response = self.client.get(f"/api/passport/verify/{cred_id}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
