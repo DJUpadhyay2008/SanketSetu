@@ -1,11 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, supabaseUrl } from '../lib/supabase';
-import { fetchFromApi } from '../api/client';
+import { fetchFromApi, putToApi } from '../api/client';
 
 export interface UserProfile {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
+  gender?: string | null;
+  dob?: string | null;
+  state?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  bio?: string | null;
+  disability_category?: string | null;
   isl_level: string;
   badges: string[];
   interests: string[];
@@ -30,6 +37,7 @@ interface AuthContextType {
   registerWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfile: (updatedFields: Partial<UserProfile>) => Promise<UserProfile>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -218,6 +226,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (updatedFields: Partial<UserProfile>): Promise<UserProfile> => {
+    let updatedProfile: UserProfile;
+    const storedSession = localStorage.getItem('sanket_demo_session');
+    
+    if (storedSession) {
+      try {
+        const parsed = JSON.parse(storedSession);
+        updatedProfile = {
+          ...(parsed.profile || profile),
+          ...updatedFields,
+          updated_at: new Date().toISOString()
+        };
+        parsed.profile = updatedProfile;
+        localStorage.setItem('sanket_demo_session', JSON.stringify(parsed));
+        setProfile(updatedProfile);
+        return updatedProfile;
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    try {
+      updatedProfile = await putToApi<UserProfile>("/users/profile", updatedFields);
+      setProfile(updatedProfile);
+      return updatedProfile;
+    } catch (err) {
+      console.warn("Backend profile update failed, falling back to local state update:", err);
+      updatedProfile = {
+        ...(profile || ({} as UserProfile)),
+        ...updatedFields,
+        updated_at: new Date().toISOString()
+      } as UserProfile;
+      setProfile(updatedProfile);
+      return updatedProfile;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -229,6 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         registerWithEmail,
         logout,
         refreshProfile,
+        updateProfile,
       }}
     >
       {children}

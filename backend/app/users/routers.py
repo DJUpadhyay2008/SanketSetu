@@ -25,6 +25,13 @@ class ProfileResponse(BaseModel):
     id: uuid.UUID
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    disability_category: Optional[str] = None
     isl_level: str
     badges: List[str]
     interests: List[str]
@@ -37,6 +44,14 @@ class ProfileResponse(BaseModel):
 class ProfileUpdate(BaseModel):
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    disability_category: Optional[str] = None
+    isl_level: Optional[str] = None
     interests: Optional[List[str]] = None
 
 @router.get("/me", response_model=UserMeResponse)
@@ -79,7 +94,7 @@ def update_user_profile(
     db: Session = Depends(get_db)
 ):
     """
-    Update profile fields (display_name, avatar_url, interests) for the authenticated user.
+    Update profile fields for the authenticated user.
     """
     profile = db.query(models.Profile).filter(models.Profile.id == current_user.id).first()
     if not profile:
@@ -92,6 +107,22 @@ def update_user_profile(
         profile.display_name = profile_data.display_name
     if profile_data.avatar_url is not None:
         profile.avatar_url = profile_data.avatar_url
+    if profile_data.gender is not None:
+        profile.gender = profile_data.gender
+    if profile_data.dob is not None:
+        profile.dob = profile_data.dob
+    if profile_data.state is not None:
+        profile.state = profile_data.state
+    if profile_data.city is not None:
+        profile.city = profile_data.city
+    if profile_data.phone is not None:
+        profile.phone = profile_data.phone
+    if profile_data.bio is not None:
+        profile.bio = profile_data.bio
+    if profile_data.disability_category is not None:
+        profile.disability_category = profile_data.disability_category
+    if profile_data.isl_level is not None:
+        profile.isl_level = profile_data.isl_level
     if profile_data.interests is not None:
         profile.interests = profile_data.interests
 

@@ -26,6 +26,13 @@ class PassportDetail(BaseModel):
     user_id: str
     display_name: str
     avatar_url: Optional[str]
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    disability_category: Optional[str] = None
     current_level: int  # 1, 2, 3
     xp_points: int
     streak: int
@@ -37,7 +44,13 @@ class PassportDetail(BaseModel):
 
 class VerificationResponse(BaseModel):
     is_valid: bool
-    recipient_masked_name: str
+    recipient_name: str
+    avatar_url: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    disability_category: Optional[str] = None
     course_name: str
     issue_date: date
     grade: str
@@ -55,9 +68,9 @@ async def get_my_passport(
     Retrieve the current authenticated user's digital ISL Passport.
     """
     profile = current_user.profile
-    display_name = profile.display_name if profile and profile.display_name else "Sanket Citizen"
+    display_name = profile.display_name if profile and profile.display_name else "Dutt"
     avatar_url = profile.avatar_url if profile else "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150"
-    current_level = int(profile.isl_level) if profile and profile.isl_level.isdigit() else 1
+    current_level = int(profile.isl_level) if profile and profile.isl_level and profile.isl_level.isdigit() else 1
     
     # Calculate real XP from completed lessons
     xp_points = calculate_user_total_xp(current_user.id, db)
@@ -103,11 +116,11 @@ async def get_my_passport(
     # Add a mock certificate if they have none for demo/sandbox purposes
     if not certificates:
         certificates.append(CertificateItem(
-            id="00000000-0000-0000-0000-000000000000",
+            id="88888888-8888-8888-8888-888888888888",
             course_name="Everyday ISL Greetings",
             issue_date=date.today(),
             grade="A+",
-            credential_url="/verify/00000000-0000-0000-0000-000000000000",
+            credential_url="/verify/88888888-8888-8888-8888-888888888888",
             issuer="Sanket Setu Platform",
             skill="Basic Greetings"
         ))
@@ -116,6 +129,13 @@ async def get_my_passport(
         user_id=str(current_user.id),
         display_name=display_name,
         avatar_url=avatar_url,
+        gender=profile.gender if profile else "Male",
+        dob=profile.dob if profile else "2008-03-08",
+        state=profile.state if profile else "Gujarat",
+        city=profile.city if profile else "Vadodara",
+        phone=profile.phone if profile else "+91 98765 43210",
+        bio=profile.bio if profile else "Certified ISL Learner dedicated to civic inclusion.",
+        disability_category=profile.disability_category if profile else "Deaf / Hard of Hearing",
         current_level=current_level,
         xp_points=xp_points,
         streak=5,  # Demo 5 days streak
@@ -132,21 +152,27 @@ async def verify_credential_public(
     db: Session = Depends(get_db)
 ):
     """
-    Public endpoint to verify a certificate / credential without exposing private user data.
+    Public endpoint to verify a certificate / credential unmasked with full profile metadata.
     """
     disclaimer = "Sanket Setu Platform Credential. This certificate verifies learning completion on the Sanket Setu digital portal. It does not represent or claim government certification or formal licensing."
     
-    # Check for demo credential ID
-    if credential_id == "00000000-0000-0000-0000-000000000000":
+    # Check for demo credential IDs
+    if credential_id in ("00000000-0000-0000-0000-000000000000", "88888888-8888-8888-8888-888888888888") or credential_id.startswith("sanket") or credential_id.startswith("demo"):
         return VerificationResponse(
             is_valid=True,
-            recipient_masked_name="S***** C******",
+            recipient_name="Dutt",
+            avatar_url=None,
+            gender="Male",
+            dob="2008-03-08",
+            state="Gujarat",
+            city="Vadodara",
+            disability_category="Deaf / Hard of Hearing",
             course_name="Everyday ISL Greetings",
             issue_date=date.today(),
             grade="A+",
             issuer="Sanket Setu Platform",
             skill="Basic Greetings",
-            verification_id="00000000-0000-0000-0000-000000000000",
+            verification_id=credential_id,
             disclaimer=disclaimer
         )
 
@@ -159,20 +185,24 @@ async def verify_credential_public(
     if not cred:
         raise HTTPException(status_code=404, detail="Credential not found or invalid")
 
-    # Mask user's display name for privacy
-    user_name = "Sanket Citizen"
-    if cred.user and cred.user.profile and cred.user.profile.display_name:
-        user_name = cred.user.profile.display_name
-        
-    # Mask name: keep first letter of each word, replace others with *
-    parts = user_name.split(" ")
-    masked_parts = []
-    for part in parts:
-        if len(part) > 1:
-            masked_parts.append(part[0] + "*" * (len(part) - 1))
-        else:
-            masked_parts.append(part)
-    masked_name = " ".join(masked_parts)
+    user_name = "Dutt"
+    avatar_url = None
+    gender = "Male"
+    dob = "2008-03-08"
+    state = "Gujarat"
+    city = "Vadodara"
+    disability_category = "Deaf / Hard of Hearing"
+
+    if cred.user and cred.user.profile:
+        prof = cred.user.profile
+        if prof.display_name:
+            user_name = prof.display_name
+        avatar_url = prof.avatar_url
+        gender = prof.gender or gender
+        dob = prof.dob or dob
+        state = prof.state or state
+        city = prof.city or city
+        disability_category = prof.disability_category or disability_category
 
     course_title = cred.course.title if cred.course else "ISL Course"
     skill_name = "ISL Communication"
@@ -183,7 +213,13 @@ async def verify_credential_public(
 
     return VerificationResponse(
         is_valid=True,
-        recipient_masked_name=masked_name,
+        recipient_name=user_name,
+        avatar_url=avatar_url,
+        gender=gender,
+        dob=dob,
+        state=state,
+        city=city,
+        disability_category=disability_category,
         course_name=course_title,
         issue_date=cred.issue_date.date() if isinstance(cred.issue_date, datetime) else date.today(),
         grade=cred.grade,

@@ -29,7 +29,14 @@ class Profile(Base):
 
     id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     display_name = Column(String(255), nullable=True)
-    avatar_url = Column(String(500), nullable=True)
+    avatar_url = Column(Text, nullable=True) # supports image URL or base64 photo upload data
+    gender = Column(String(50), nullable=True) # Male, Female, Non-Binary, Prefer not to say, Other
+    dob = Column(String(50), nullable=True) # Date of Birth (YYYY-MM-DD)
+    state = Column(String(100), nullable=True) # e.g. Gujarat, Maharashtra, Delhi, etc.
+    city = Column(String(100), nullable=True) # e.g. Ahmedabad, Mumbai, etc.
+    phone = Column(String(20), nullable=True) # Contact phone number
+    bio = Column(Text, nullable=True) # Bio / About user
+    disability_category = Column(String(100), nullable=True) # Deaf, Hard of Hearing, Hearing Ally, ISL Learner, etc.
     isl_level = Column(String(50), default="1", nullable=False)
     badges = Column(JSON, default=list, nullable=False) # list of badge names/IDs
     interests = Column(JSON, default=list, nullable=False) # list of strings

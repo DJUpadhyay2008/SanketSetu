@@ -6,8 +6,35 @@ from app.core.api import api_router
 from app.database.session import engine, Base
 from app.database import models
 
+from sqlalchemy import inspect, text
+
 # Automatically create tables in the database at startup
 Base.metadata.create_all(bind=engine)
+
+# Migration check: Ensure new profile fields exist in profiles table
+try:
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        if "profiles" in inspector.get_table_names():
+            existing_columns = [c["name"] for c in inspector.get_columns("profiles")]
+            new_cols = [
+                ("gender", "VARCHAR(50)"),
+                ("dob", "VARCHAR(50)"),
+                ("state", "VARCHAR(100)"),
+                ("city", "VARCHAR(100)"),
+                ("phone", "VARCHAR(20)"),
+                ("bio", "TEXT"),
+                ("disability_category", "VARCHAR(100)"),
+            ]
+            for col_name, col_type in new_cols:
+                if col_name not in existing_columns:
+                    try:
+                        conn.execute(text(f"ALTER TABLE profiles ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                    except Exception as e:
+                        print(f"Migration note for column {col_name}: {e}")
+except Exception as err:
+    print(f"Auto-migration inspect error: {err}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
