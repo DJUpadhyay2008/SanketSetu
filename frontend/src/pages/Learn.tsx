@@ -770,13 +770,13 @@ export default function Learn() {
     "Thank You": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
     "Welcome": { url: "https://www.youtube.com/watch?v=_B5I2cuRahE", type: "youtube" },
     "Goodbye": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
-    "Sorry": { url: "https://www.youtube.com/watch?v=0Jq09mKzPqY", type: "youtube" },
-    "Yes": { url: "https://www.youtube.com/watch?v=g0T2rQn8q0E", type: "youtube" },
-    "No": { url: "https://www.youtube.com/watch?v=h4-U-gW3rW8", type: "youtube" },
+    "Sorry": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
+    "Yes": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "No": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
     "Help": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
     "Please": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
-    "Good": { url: "https://www.youtube.com/watch?v=g0T2rQn8q0E", type: "youtube" },
-    "Bad": { url: "https://www.youtube.com/watch?v=h4-U-gW3rW8", type: "youtube" },
+    "Good": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Bad": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
     "Water": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
     "Doctor": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
     "Hospital": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
@@ -797,24 +797,20 @@ export default function Learn() {
 
     fetchFromApi<ISLSign>(`/learning/signs/${encodeURIComponent(term)}`)
       .then((data) => {
-        if (data && data.video_url && !data.video_url.includes("-L-") && !data.video_url.includes("-H-")) {
-          setSelectedSign(data);
-        } else {
-          setSelectedSign({
-            id: data?.id || "temp-" + term,
-            term: term,
-            category: data?.category || "General",
-            difficulty: data?.difficulty || "Beginner",
-            meaning: data?.meaning || `Standard ISL sign gesture for ${term}.`,
-            description: data?.description || `Anatomical hand shape and posture for signing ${term}.`,
-            video_url: videoConfig.url,
-            video_type: videoConfig.type,
-            source: "ISLRTC",
-            source_url: "https://islrtc.nic.in/isl-dictionary/",
-            is_embeddable: true,
-            related_signs: data?.related_signs || ["Namaste", "Hello", "Thank You"]
-          });
-        }
+        setSelectedSign({
+          id: data?.id || "temp-" + term,
+          term: term,
+          category: data?.category || "General",
+          difficulty: data?.difficulty || "Beginner",
+          meaning: data?.meaning || `Standard ISL sign gesture for ${term}.`,
+          description: data?.description || `Anatomical hand shape and posture for signing ${term}.`,
+          video_url: videoConfig.url,
+          video_type: videoConfig.type,
+          source: "ISLRTC",
+          source_url: "https://islrtc.nic.in/isl-dictionary/",
+          is_embeddable: true,
+          related_signs: data?.related_signs || ["Namaste", "Hello", "Thank You"]
+        });
       })
       .catch(() => {
         setSelectedSign({
