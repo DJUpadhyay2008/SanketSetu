@@ -113,7 +113,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   }
 
   // ----------------------------------------------------
-  // TWO-HAND GESTURES (Namaste, Help, Friend, School / College)
+  // TWO-HAND GESTURES (Namaste, Help, Friend, School / College, Work / Job, Family, Book / Read, Write / Pen)
   // ----------------------------------------------------
   if (hands.length >= 2) {
     const h1 = hands[0].landmarks;
@@ -125,6 +125,47 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
 
     const h1ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h1, t, [2, 6, 10, 14, 18][i])).length;
     const h2ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h2, t, [2, 6, 10, 14, 18][i])).length;
+
+    // WORK / JOB: Two closed fists tapping together at wrists
+    if (h1ExtCount <= 1 && h2ExtCount <= 1 && wristDist < 0.30) {
+      return {
+        sign: "Work / Job",
+        confidence: 0.94,
+        feedback: "✓ Two closed fists tapping at wrists. Work / Job sign recognized!",
+        handsCount: hands.length,
+      };
+    }
+
+    // BOOK / READ: Both flat palms open side-by-side touching at thumbs/edges
+    if (h1ExtCount >= 4 && h2ExtCount >= 4 && indexTipDist < 0.20 && wristDist < 0.32) {
+      return {
+        sign: "Book / Read",
+        confidence: 0.95,
+        feedback: "✓ Two open palms side-by-side like a book. Book / Read sign recognized!",
+        handsCount: hands.length,
+      };
+    }
+
+    // WRITE / PEN: One open palm flat, one hand pinched tracing across
+    const oneFlatOnePinch = (h1ExtCount >= 4 && h2ExtCount <= 2) || (h2ExtCount >= 4 && h1ExtCount <= 2);
+    if (oneFlatOnePinch && indexTipDist < 0.22) {
+      return {
+        sign: "Write / Pen",
+        confidence: 0.93,
+        feedback: "✓ Writing motion over open palm. Write / Pen sign recognized!",
+        handsCount: hands.length,
+      };
+    }
+
+    // FAMILY: Both open hands forming a circle/oval together
+    if (h1ExtCount >= 3 && h2ExtCount >= 3 && indexTipDist < 0.25 && wristDist > 0.25) {
+      return {
+        sign: "Family",
+        confidence: 0.92,
+        feedback: "✓ Both open hands forming a circle posture. Family sign recognized!",
+        handsCount: hands.length,
+      };
+    }
 
     // FRIEND: Both index fingers extended touching each other
     if (isFingerExtended(h1, 8, 6) && isFingerExtended(h2, 8, 6) && indexTipDist < 0.22) {
@@ -169,7 +210,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   }
 
   // ----------------------------------------------------
-  // ONE-HAND GESTURES (26 Distinct ISL Gestures)
+  // ONE-HAND GESTURES (32 Distinct ISL Gestures)
   // ----------------------------------------------------
   const pts = hands[0].landmarks;
 
@@ -186,7 +227,47 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   const indexTipY = pts[8].y;
   const thumbIndexTipDist = getDistance(pts[4], pts[8]);
 
-  // 1. FOOD / EAT: Pinch thumb + index near mouth (high Y: indexTipY < 0.32)
+  // 1. SEARCH / LOOK: V-sign (Index & Middle) raised near eyes (indexTipY < 0.30)
+  if (indexExt && middleExt && indexTipY < 0.30 && !ringExt && !pinkyExt) {
+    return {
+      sign: "Search / Look",
+      confidence: 0.93,
+      feedback: "✓ V-sign pointed near eye level. Search / Look sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 2. QUESTION / WHY: Index finger flexed/pointing near chin (indexTipY < 0.38)
+  if (indexExt && !middleExt && !ringExt && !pinkyExt && indexTipY < 0.38 && indexTipY > 0.28) {
+    return {
+      sign: "Question / Why",
+      confidence: 0.90,
+      feedback: "✓ Index finger pointing near chin. Question / Why sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 3. LIKE: Thumb & index extended wide near heart level
+  if (thumbExt && indexExt && !middleExt && !ringExt && !pinkyExt && thumbIndexTipDist > 0.14) {
+    return {
+      sign: "Like",
+      confidence: 0.92,
+      feedback: "✓ L-shaped thumb and index extended. Like sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 4. DISLIKE: Thumb pointing down with index finger extended
+  if (thumbExt && indexExt && thumbTipY > thumbMcpY + 0.03) {
+    return {
+      sign: "Dislike",
+      confidence: 0.91,
+      feedback: "✓ Thumb down gesture with index extended. Dislike sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 5. FOOD / EAT: Pinch thumb + index near mouth (high Y: indexTipY < 0.32)
   if (thumbIndexTipDist < 0.08 && indexTipY < 0.32) {
     return {
       sign: "Food / Eat",
@@ -196,7 +277,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 2. MONEY: Pinch thumb + index near chest level (indexTipY between 0.32 and 0.65)
+  // 6. MONEY: Pinch thumb + index near chest level
   if (thumbIndexTipDist < 0.07 && indexTipY >= 0.32 && indexTipY <= 0.65 && !middleExt) {
     return {
       sign: "Money",
@@ -206,7 +287,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 3. OK: Pinch between Thumb tip (4) & Index tip (8) | Middle, Ring, Pinky extended
+  // 7. OK: Pinch between Thumb tip (4) & Index tip (8) | Middle, Ring, Pinky extended
   if (thumbIndexTipDist < 0.08 && middleExt && ringExt) {
     return {
       sign: "OK",
@@ -216,7 +297,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 4. POLICE: Index & Middle finger salute posture near forehead (indexTipY < 0.28)
+  // 8. POLICE: Index & Middle finger salute posture near forehead
   if (indexExt && middleExt && indexTipY < 0.28 && !ringExt && !pinkyExt) {
     return {
       sign: "Police",
@@ -226,7 +307,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 5. MEDICINE: Middle finger extended alone rubbing palm
+  // 9. MEDICINE: Middle finger extended alone rubbing palm
   if (middleExt && !indexExt && !ringExt && !pinkyExt) {
     return {
       sign: "Medicine",
@@ -236,7 +317,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 6. ROCK (Horns): Index & Pinky extended | Middle & Ring folded
+  // 10. ROCK (Horns): Index & Pinky extended | Middle & Ring folded
   const thumbToMiddleMcp = getDistance(pts[4], pts[9]);
   if (indexExt && pinkyExt && !middleExt && !ringExt) {
     if (thumbToMiddleMcp < 0.16 || !thumbExt) {
@@ -249,7 +330,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     }
   }
 
-  // 7. LOVE (I-L-Y): Thumb, Index, Pinky extended wide | Middle & Ring folded
+  // 11. LOVE (I-L-Y): Thumb, Index, Pinky extended wide
   if (thumbExt && indexExt && pinkyExt && !middleExt && !ringExt && thumbToMiddleMcp >= 0.16) {
     return {
       sign: "Love",
@@ -259,7 +340,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 8. CALL: Thumb & Pinky extended | Index, Middle, Ring folded
+  // 12. CALL: Thumb & Pinky extended
   if (thumbExt && pinkyExt && !indexExt && !middleExt && !ringExt) {
     return {
       sign: "Call",
@@ -269,7 +350,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 9. VICTORY: Index & Middle extended wide apart
+  // 13. VICTORY: Index & Middle extended wide apart
   const indexMiddleSpread = getDistance(pts[8], pts[12]);
   if (indexExt && middleExt && !ringExt && !pinkyExt && indexMiddleSpread > 0.09) {
     return {
@@ -280,7 +361,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 10. TIME: Single index finger pointing low at wrist watch location (indexTipY > 0.65)
+  // 14. TIME: Single index finger pointing low at wrist watch location
   if (indexExt && !middleExt && !ringExt && !pinkyExt && indexTipY > 0.65) {
     return {
       sign: "Time",
@@ -290,7 +371,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 11. GOVERNMENT / DOCTOR: Single index finger pointing gesture
+  // 15. GOVERNMENT / DOCTOR: Single index finger pointing gesture
   if (indexExt && !middleExt && !ringExt && !pinkyExt) {
     if (indexTipY < 0.35) {
       return {
@@ -308,7 +389,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 12. GOOD (Thumbs Up): Thumb extended upward
+  // 16. GOOD (Thumbs Up): Thumb extended upward
   if (thumbExt && thumbTipY < thumbMcpY - 0.03 && !indexExt && !middleExt && !ringExt && !pinkyExt) {
     return {
       sign: "Good",
@@ -318,7 +399,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 13. BAD (Thumbs Down): Thumb extended downward
+  // 17. BAD (Thumbs Down): Thumb extended downward
   if (thumbExt && thumbTipY > thumbMcpY + 0.03 && !indexExt && !middleExt && !ringExt) {
     return {
       sign: "Bad",
@@ -328,7 +409,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 14. WATER: Index, Middle, Ring extended (W sign)
+  // 18. WATER: Index, Middle, Ring extended (W sign)
   if (indexExt && middleExt && ringExt && !pinkyExt) {
     return {
       sign: "Water",
@@ -338,7 +419,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 15. EMERGENCY: Raised fist near upper portion of frame
+  // 19. EMERGENCY: Raised fist near upper portion of frame
   if (extendedCount <= 2 && (wristY < 0.52 || indexTipY < 0.45)) {
     return {
       sign: "Emergency",
@@ -348,7 +429,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 16. NO: Index & Middle fingers extended together
+  // 20. NO: Index & Middle fingers extended together
   if (indexExt && middleExt && !ringExt && !pinkyExt) {
     return {
       sign: "No",
@@ -358,7 +439,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 17. YES: Closed fist gesture
+  // 21. YES: Closed fist gesture
   if (extendedCount <= 1 && !indexExt && !middleExt) {
     return {
       sign: "Yes",
@@ -368,7 +449,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // 18. SORRY: Closed fist held at chest level
+  // 22. SORRY: Closed fist held at chest level
   if (extendedCount <= 1 && wristY > 0.48 && wristY < 0.85) {
     return {
       sign: "Sorry",
@@ -379,9 +460,29 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   }
 
   // ----------------------------------------------------
-  // OPEN PALM DISCRIMINATION (Stop, Please, Thank You, Welcome, Hello, Home)
+  // OPEN PALM DISCRIMINATION (Stop, Please, Thank You, Welcome, Hello, Home, Happy, Sad)
   // ----------------------------------------------------
   if (extendedCount >= 4) {
+    // SAD: Open palm facing inward near face with fingertips downward
+    if (indexTipY > wristY && indexTipY < 0.45) {
+      return {
+        sign: "Sad",
+        confidence: 0.91,
+        feedback: "✓ Open hand sliding down face. Sad sign recognized!",
+        handsCount: 1,
+      };
+    }
+
+    // HAPPY: Open palm brushing upward near chest
+    if (wristY >= 0.42 && wristY <= 0.70 && indexTipY < wristY - 0.10) {
+      return {
+        sign: "Happy",
+        confidence: 0.91,
+        feedback: "✓ Open palm brushing upward near chest. Happy sign recognized!",
+        handsCount: 1,
+      };
+    }
+
     // HOME: Open palm with fingertips pointing downward/inward
     if (indexTipY > wristY + 0.05) {
       return {
@@ -402,7 +503,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
       };
     }
 
-    // THANK YOU: Open palm near chin/face height (indexTipY < 0.32)
+    // THANK YOU: Open palm near chin/face height
     if (indexTipY < 0.32) {
       return {
         sign: "Thank You",
