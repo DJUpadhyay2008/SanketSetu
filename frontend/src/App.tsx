@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AppShell from './layouts/AppShell'
 import { AuthProvider } from './hooks/useAuth'
@@ -41,6 +41,18 @@ function PageSkeleton() {
   )
 }
 
+function MainLayout() {
+  return (
+    <AppShell>
+      <ErrorBoundary>
+        <Suspense fallback={<PageSkeleton />}>
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
+    </AppShell>
+  )
+}
+
 // Global TanStack Query Client with sensible cache settings
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,29 +79,21 @@ function App() {
             } />
 
             {/* Main Application Routes inside AppShell */}
-            <Route path="/*" element={
-              <AppShell>
-                <ErrorBoundary>
-                  <Suspense fallback={<PageSkeleton />}>
-                    <Routes>
-                      <Route path="/"           element={<Home />} />
-                      <Route path="/learn"      element={<Learn />} />
-                      <Route path="/schemes"    element={<Schemes />} />
-                      <Route path="/assist"     element={<Assist />} />
-                      <Route path="/assist/:category/:slug" element={<AssistPortal />} />
-                      <Route path="/institution" element={<Institution />} />
-                      <Route path="/passport"   element={<Passport />} />
-                      <Route path="/community"  element={<Community />} />
-                      <Route path="/leaderboard" element={<Leaderboard />} />
-                      <Route path="/offline"    element={<OfflineManager />} />
-                      <Route path="/live"       element={<SanketLive />} />
-                      <Route path="/settings"   element={<Settings />} />
-                      <Route path="*"           element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </ErrorBoundary>
-              </AppShell>
-            } />
+            <Route element={<MainLayout />}>
+              <Route path="/"           element={<Home />} />
+              <Route path="/learn"      element={<Learn />} />
+              <Route path="/schemes"    element={<Schemes />} />
+              <Route path="/assist"     element={<Assist />} />
+              <Route path="/assist/:category/:slug" element={<AssistPortal />} />
+              <Route path="/institution" element={<Institution />} />
+              <Route path="/passport"   element={<Passport />} />
+              <Route path="/community"  element={<Community />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/offline"    element={<OfflineManager />} />
+              <Route path="/live"       element={<SanketLive />} />
+              <Route path="/settings"   element={<Settings />} />
+              <Route path="*"           element={<NotFound />} />
+            </Route>
           </Routes>
         </Router>
       </AuthProvider>
