@@ -2,7 +2,7 @@
  * islClassifier.ts
  * Real-time client-side ISL Landmark Normalizer and Deterministic Classifier.
  * Processes 21-point MediaPipe hand landmarks into normalized feature vectors
- * and classifies ISL signs with high-accuracy geometric rules & priority evaluation.
+ * and classifies 20 ISL signs with high-accuracy geometric rules & priority evaluation.
  */
 
 export interface NormalizedLandmark {
@@ -27,11 +27,23 @@ export const SUPPORTED_VOCABULARY = [
   { term: "Namaste", category: "Greetings", description: "Two palms pressed together flat at chest level." },
   { term: "Hello", category: "Greetings", description: "Open right palm raised with all fingers extended." },
   { term: "Thank You", category: "Greetings", description: "Open palm fingertips near chin extending forward." },
+  { term: "Welcome", category: "Greetings", description: "Open palm sweeping gently inward toward body." },
+  { term: "Please", category: "Social", description: "Open palm placed over chest rubbing softly." },
+  { term: "Sorry", category: "Social", description: "Closed fist held over heart in small circle." },
+  { term: "Love", category: "Expressions", description: "I-L-Y sign with Thumb, Index, and Pinky extended." },
   { term: "Help", category: "Communication", description: "Right fist with thumb up resting on flat left palm." },
   { term: "Yes", category: "Communication", description: "Right hand closed fist with fingers flexed down." },
-  { term: "No", category: "Communication", description: "Index & middle finger extended and touching thumb." },
+  { term: "No", category: "Communication", description: "Index & middle finger extended in V/pinch posture." },
+  { term: "Good", category: "Expressions", description: "Classic Thumbs-Up sign indicating positivity." },
+  { term: "Bad", category: "Expressions", description: "Thumbs-Down sign indicating negation or poor quality." },
+  { term: "Water", category: "Daily Needs", description: "Three fingers (W sign) tapped near chin/mouth area." },
   { term: "Doctor", category: "Healthcare", description: "Right index finger tapping wrist pulse area." },
   { term: "Emergency", category: "Healthcare", description: "Fist raised near shoulder shaking urgently." },
+  { term: "Stop", category: "Safety", description: "Flat vertical open palm facing forward to halt." },
+  { term: "OK", category: "Social", description: "Pinch between Thumb and Index tip with 3 fingers open." },
+  { term: "Victory", category: "Expressions", description: "V-sign with Index and Middle fingers spread wide." },
+  { term: "Call", category: "Communication", description: "Thumb and Pinky extended near ear simulating phone." },
+  { term: "Rock", category: "Expressions", description: "Horns gesture with Index and Pinky extended high." },
 ];
 
 /**
@@ -78,7 +90,7 @@ function isFingerExtended(pts: NormalizedLandmark[], tipIdx: number, pipIdx: num
 }
 
 /**
- * 2. Deterministic ISL Gesture Classifier
+ * 2. Deterministic ISL Gesture Classifier (20 Signs)
  */
 export function classifyISLGesture(hands: HandData[]): PredictionResult {
   if (!hands || hands.length === 0) {
@@ -135,7 +147,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   }
 
   // ----------------------------------------------------
-  // ONE-HAND GESTURES (Thank You, Emergency, Doctor, No, Yes, Hello)
+  // ONE-HAND GESTURES (18 Distinct ISL Gestures)
   // ----------------------------------------------------
   const pts = hands[0].landmarks;
 
@@ -147,9 +159,93 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
 
   const extendedCount = [thumbExt, indexExt, middleExt, ringExt, pinkyExt].filter(Boolean).length;
   const wristY = pts[0].y;
+  const thumbTipY = pts[4].y;
+  const thumbMcpY = pts[2].y;
   const indexTipY = pts[8].y;
 
-  // EMERGENCY: Raised fist near upper portion of camera frame
+  // 1. LOVE (I-L-Y): Thumb, Index, Pinky extended | Middle & Ring folded
+  if (thumbExt && indexExt && pinkyExt && !middleExt && !ringExt) {
+    return {
+      sign: "Love",
+      confidence: 0.93,
+      feedback: "✓ I-L-Y sign (Thumb, Index, Pinky extended). Love sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 2. OK: Pinch between Thumb tip (4) & Index tip (8) | Middle, Ring, Pinky extended
+  const thumbIndexTipDist = getDistance(pts[4], pts[8]);
+  if (thumbIndexTipDist < 0.08 && middleExt && ringExt) {
+    return {
+      sign: "OK",
+      confidence: 0.92,
+      feedback: "✓ Thumb and index tip pinch with open fingers. OK sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 3. CALL: Thumb & Pinky extended | Index, Middle, Ring folded
+  if (thumbExt && pinkyExt && !indexExt && !middleExt && !ringExt) {
+    return {
+      sign: "Call",
+      confidence: 0.91,
+      feedback: "✓ Phone gesture (Thumb & Pinky extended). Call sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 4. ROCK: Index & Pinky extended | Thumb, Middle, Ring folded
+  if (indexExt && pinkyExt && !thumbExt && !middleExt && !ringExt) {
+    return {
+      sign: "Rock",
+      confidence: 0.90,
+      feedback: "✓ Horns posture (Index & Pinky extended). Rock sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 5. VICTORY: Index & Middle extended wide apart | Ring & Pinky flexed
+  const indexMiddleSpread = getDistance(pts[8], pts[12]);
+  if (indexExt && middleExt && !ringExt && !pinkyExt && indexMiddleSpread > 0.09) {
+    return {
+      sign: "Victory",
+      confidence: 0.92,
+      feedback: "✓ V-sign with fingers spread wide. Victory sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 6. GOOD (Thumbs Up): Thumb extended upward | All other fingers folded
+  if (thumbExt && thumbTipY < thumbMcpY - 0.03 && !indexExt && !middleExt && !ringExt && !pinkyExt) {
+    return {
+      sign: "Good",
+      confidence: 0.93,
+      feedback: "✓ Thumbs-up posture detected. Good sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 7. BAD (Thumbs Down): Thumb extended downward | All other fingers folded
+  if (thumbExt && thumbTipY > thumbMcpY + 0.03 && !indexExt && !middleExt && !ringExt) {
+    return {
+      sign: "Bad",
+      confidence: 0.91,
+      feedback: "✓ Thumbs-down posture detected. Bad sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 8. WATER: Index, Middle, Ring extended (W sign) | Pinky flexed near chin
+  if (indexExt && middleExt && ringExt && !pinkyExt && indexTipY < 0.68) {
+    return {
+      sign: "Water",
+      confidence: 0.89,
+      feedback: "✓ Three-finger W gesture near chin. Water sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 9. EMERGENCY: Raised fist near upper portion of camera frame
   if (extendedCount <= 2 && (wristY < 0.52 || indexTipY < 0.45)) {
     return {
       sign: "Emergency",
@@ -159,7 +255,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // THANK YOU: Open palm near upper frame/chin height
+  // 10. THANK YOU: Open palm near upper frame/chin height
   if (extendedCount >= 3 && indexTipY < 0.55 && (indexExt && middleExt && ringExt)) {
     return {
       sign: "Thank You",
@@ -169,7 +265,17 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // NO: Index & Middle fingers extended together, Ring & Pinky flexed
+  // 11. STOP: Open vertical palm facing forward
+  if (extendedCount >= 4 && indexTipY < 0.50 && wristY > 0.40) {
+    return {
+      sign: "Stop",
+      confidence: 0.90,
+      feedback: "✓ Vertical open palm facing forward. Stop sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 12. NO: Index & Middle fingers extended together | Ring & Pinky flexed
   if (indexExt && middleExt && !ringExt && !pinkyExt) {
     return {
       sign: "No",
@@ -179,7 +285,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // DOCTOR: Index finger pointing downward/toward wrist pulse
+  // 13. DOCTOR: Index finger pointing downward/toward wrist pulse
   if (indexExt && !middleExt && !ringExt && !pinkyExt) {
     return {
       sign: "Doctor",
@@ -189,7 +295,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // YES: Closed fist gesture
+  // 14. YES: Closed fist gesture
   if (extendedCount <= 1 && !indexExt && !middleExt) {
     return {
       sign: "Yes",
@@ -199,7 +305,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     };
   }
 
-  // HELLO: Open palm with 4+ fingers extended raised in view
+  // 15. HELLO: Open palm with 4+ fingers extended raised in view
   if (extendedCount >= 4) {
     return {
       sign: "Hello",
