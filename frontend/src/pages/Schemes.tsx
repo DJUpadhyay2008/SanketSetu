@@ -291,7 +291,7 @@ export default function Schemes() {
   useEffect(() => {
     fetchFromApi<Scheme[]>("/schemes")
       .then((data) => {
-        if (data && data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           setSchemes(data);
         }
         setLoading(false);
@@ -315,7 +315,15 @@ export default function Schemes() {
         method: "POST",
         body: JSON.stringify({ question: queryToSend }),
       });
-      setChatHistory((prev) => [...prev, { q: queryToSend, a: res.answer, sources: res.sources, urls: res.urls }]);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          q: queryToSend,
+          a: res?.answer || "I could not find information on this query.",
+          sources: Array.isArray(res?.sources) ? res.sources : [],
+          urls: Array.isArray(res?.urls) ? res.urls : []
+        }
+      ]);
     } catch {
       // Fallback
       setTimeout(() => {
@@ -353,7 +361,7 @@ export default function Schemes() {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      setEvaluationResults(res);
+      setEvaluationResults(Array.isArray(res) ? res : []);
       setHasEvaluated(true);
     } catch (err) {
       console.error(err);
@@ -368,7 +376,7 @@ export default function Schemes() {
   };
 
   // Filter schemes in Directory tab
-  const filteredSchemes = schemes.filter(s => {
+  const filteredSchemes = (Array.isArray(schemes) ? schemes : INITIAL_SCHEMES).filter(s => {
     const title = s?.title || "";
     const description = s?.description || "";
     const department = s?.department || "";
@@ -529,7 +537,7 @@ export default function Schemes() {
                             </div>
                           )}
 
-                          {s.documents && s.documents.length > 0 && (
+                          {Array.isArray(s.documents) && s.documents.length > 0 && (
                             <div>
                               <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1">Required Documents</span>
                               <div className="flex flex-wrap gap-1.5 mt-1">
@@ -740,12 +748,12 @@ export default function Schemes() {
                             <div className="space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-3 text-[10px]">
                               <div className="flex flex-wrap gap-1.5 items-center">
                                 <span className="font-extrabold text-emerald-600 uppercase tracking-wider mr-1">Matched Rules:</span>
-                                {res.matched_criteria.map((c, i) => (
+                                {(res.matched_criteria || []).map((c, i) => (
                                   <span key={i} className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 border border-emerald-250 dark:border-emerald-900/25 px-2 py-0.5 rounded font-bold">{c}</span>
                                 ))}
                               </div>
 
-                              {res.documents && res.documents.length > 0 && (
+                              {Array.isArray(res.documents) && res.documents.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 items-center pt-1.5">
                                   <span className="font-extrabold text-slate-400 uppercase tracking-wider mr-1">Documents to Prepare:</span>
                                   {res.documents.map((doc, i) => (
@@ -785,7 +793,7 @@ export default function Schemes() {
                             <p className="text-2xs font-semibold text-slate-650 dark:text-slate-350">{res.benefits}</p>
                             
                             <div className="space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-3 text-[10px]">
-                              {res.matched_criteria.length > 0 && (
+                              {Array.isArray(res.matched_criteria) && res.matched_criteria.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 items-center">
                                   <span className="font-extrabold text-emerald-600 uppercase tracking-wider mr-1">Matched:</span>
                                   {res.matched_criteria.map((c, i) => (
@@ -794,7 +802,7 @@ export default function Schemes() {
                                 </div>
                               )}
                               
-                              {res.missing_input_criteria.length > 0 && (
+                              {Array.isArray(res.missing_input_criteria) && res.missing_input_criteria.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 items-center pt-1.5">
                                   <span className="font-extrabold text-orange-500 uppercase tracking-wider mr-1">Missing Inputs to Confirm:</span>
                                   {res.missing_input_criteria.map((c, i) => (
@@ -828,7 +836,7 @@ export default function Schemes() {
                               <h5 className="text-sm font-extrabold text-slate-900 dark:text-slate-450">{res.title}</h5>
                             </div>
                             <div className="space-y-1.5 text-[10px]">
-                              {res.unmatched_criteria.map((c, i) => (
+                              {(res.unmatched_criteria || []).map((c, i) => (
                                 <div key={i} className="text-rose-500 font-semibold flex items-center gap-1.5">
                                   <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                                   Unmatched rule: {c}
@@ -874,7 +882,7 @@ export default function Schemes() {
                   <div className="max-w-[85%] rounded-xl bg-slate-50 dark:bg-slate-900/80 p-3 border border-slate-200/50 dark:border-slate-808 text-slate-700 dark:text-slate-300 space-y-2 font-semibold leading-relaxed shadow-2xs">
                     <p className="whitespace-pre-wrap">{chat.a}</p>
                     
-                    {chat.sources && chat.sources.length > 0 && (
+                    {Array.isArray(chat.sources) && chat.sources.length > 0 && (
                       <div className="border-t border-slate-200/50 dark:border-slate-800/80 pt-2 mt-2 space-y-1.5">
                         <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest block">Verified Sources:</span>
                         <div className="flex flex-wrap gap-2">
@@ -884,7 +892,7 @@ export default function Schemes() {
                             </span>
                           ))}
                         </div>
-                        {chat.urls && chat.urls.length > 0 && (
+                        {Array.isArray(chat.urls) && chat.urls.length > 0 && (
                           <div className="flex flex-col gap-1 pt-1 border-t border-dashed border-slate-200/50 dark:border-slate-800/50">
                             {chat.urls.map((url, i) => (
                               <a 

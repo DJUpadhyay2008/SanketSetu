@@ -59,6 +59,85 @@ interface StoryPost {
   created_at: string;
 }
 
+const FALLBACK_STORIES: StoryPost[] = [
+  {
+    id: "fb-1",
+    author_name: "Deepa Sharma",
+    title: "My experience joining as an ISL interpreter at Delhi Metro",
+    content: "Last week was my first week assisting commuters. Seeing tourists and daily commuters smile and navigate easily felt incredibly rewarding. People were able to get their tickets without confusion for the first time.",
+    tags: ["Inspiration", "Careers", "Metro"],
+    likes: 42,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "fb-2",
+    author_name: "Aman Preet",
+    title: "How I used healthcare ISL vocab in a real clinic visit",
+    content: "Helped an elderly deaf neighbor communicate with their dentist using the lessons I learned in the Healthcare ISL module. Learning ISL is a real superpower!",
+    tags: ["Healthcare", "Fingerspelling", "DailyLife"],
+    likes: 29,
+    created_at: new Date().toISOString()
+  }
+];
+
+const FALLBACK_PARTNERS: PublicProfile[] = [
+  {
+    user_id: "aarav-id",
+    display_name: "Aarav Mehta",
+    avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
+    isl_level: 2,
+    badges: ["Quick Starter", "Fingerspell Pro"],
+    interests: ["Emergency Support", "Travel Signs", "Fingerspelling"]
+  },
+  {
+    user_id: "priya-id",
+    display_name: "Priya Patel",
+    avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150",
+    isl_level: 1,
+    badges: ["First Greeting"],
+    interests: ["Everyday Chats", "Healthcare Vocabulary"]
+  },
+  {
+    user_id: "rohan-id",
+    display_name: "Rohan Das",
+    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150",
+    isl_level: 3,
+    badges: ["Community Helper", "12-Day Streak"],
+    interests: ["Legal Terms", "Civic Services", "Public Assistance"]
+  }
+];
+
+const FALLBACK_MENTORS: MentorDetail[] = [
+  {
+    id: "mentor-1",
+    user_id: "anita-id",
+    display_name: "Anita Desai",
+    avatar_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150",
+    isl_level: 3,
+    badges: ["Verified Mentor", "Sanket Expert"],
+    interests: ["Medical ISL", "Interpreter Training"],
+    certification_details: "National ISL Trainer Certification (Level A)",
+    rating: 4.8,
+    is_verified: true,
+    assessment_score: 95,
+    reviews_count: 18
+  },
+  {
+    id: "mentor-2",
+    user_id: "rajesh-id",
+    display_name: "Rajesh Sharma",
+    avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150",
+    isl_level: 3,
+    badges: ["Verified Mentor", "Disaster Specialist"],
+    interests: ["Emergency Response", "Civic Signage"],
+    certification_details: "Disaster Sign Management Specialist (A+ Certified)",
+    rating: 4.9,
+    is_verified: true,
+    assessment_score: 98,
+    reviews_count: 24
+  }
+];
+
 export default function Community() {
   const [activeTab, setActiveTab] = useState<"stories" | "partners" | "mentors" | "requests">("stories");
   
@@ -67,9 +146,9 @@ export default function Community() {
   const [_error, setError] = useState<string | null>(null);
   
   // Data States
-  const [stories, setStories] = useState<StoryPost[]>([]);
-  const [partners, setPartners] = useState<PublicProfile[]>([]);
-  const [mentors, setMentors] = useState<MentorDetail[]>([]);
+  const [stories, setStories] = useState<StoryPost[]>(FALLBACK_STORIES);
+  const [partners, setPartners] = useState<PublicProfile[]>(FALLBACK_PARTNERS);
+  const [mentors, setMentors] = useState<MentorDetail[]>(FALLBACK_MENTORS);
   const [incomingReqs, setIncomingReqs] = useState<PracticeRequest[]>([]);
   const [outgoingReqs, setOutgoingReqs] = useState<PracticeRequest[]>([]);
   
@@ -109,140 +188,30 @@ export default function Community() {
     try {
       if (activeTab === "stories") {
         const data = await fetchFromApi<StoryPost[]>("/community/posts");
-        setStories(data);
+        if (Array.isArray(data) && data.length > 0) setStories(data);
+        else setStories(FALLBACK_STORIES);
       } else if (activeTab === "partners") {
         const data = await fetchFromApi<PublicProfile[]>("/community/partners");
-        setPartners(data);
+        if (Array.isArray(data) && data.length > 0) setPartners(data);
+        else setPartners(FALLBACK_PARTNERS);
       } else if (activeTab === "mentors") {
         const data = await fetchFromApi<MentorDetail[]>("/community/mentors");
-        setMentors(data);
+        if (Array.isArray(data) && data.length > 0) setMentors(data);
+        else setMentors(FALLBACK_MENTORS);
       } else if (activeTab === "requests") {
         const [incoming, outgoing] = await Promise.all([
-          fetchFromApi<PracticeRequest[]>("/community/requests/incoming"),
-          fetchFromApi<PracticeRequest[]>("/community/requests/outgoing")
+          fetchFromApi<PracticeRequest[]>("/community/requests/incoming").catch(() => []),
+          fetchFromApi<PracticeRequest[]>("/community/requests/outgoing").catch(() => [])
         ]);
-        setIncomingReqs(incoming);
-        setOutgoingReqs(outgoing);
+        if (Array.isArray(incoming)) setIncomingReqs(incoming);
+        if (Array.isArray(outgoing)) setOutgoingReqs(outgoing);
       }
       setLoading(false);
     } catch (err: any) {
-      console.warn("API Error, loading fallbacks: ", err);
       setError(err.message || "Connection refused");
-      
-      // Seed Fallbacks so the page is fully interactive offline
-      if (activeTab === "stories") {
-        setStories([
-          {
-            id: "fb-1",
-            author_name: "Deepa Sharma",
-            title: "My experience joining as an ISL interpreter at Delhi Metro",
-            content: "Last week was my first week assisting commuters. Seeing tourists and daily commuters smile and navigate easily felt incredibly rewarding. People were able to get their tickets without confusion for the first time.",
-            tags: ["Inspiration", "Careers", "Metro"],
-            likes: 42,
-            created_at: new Date().toISOString()
-          },
-          {
-            id: "fb-2",
-            author_name: "Aman Preet",
-            title: "How I used healthcare ISL vocab in a real clinic visit",
-            content: "Helped an elderly deaf neighbor communicate with their dentist using the lessons I learned in the Healthcare ISL module. Learning ISL is a real superpower!",
-            tags: ["Healthcare", "Fingerspelling", "DailyLife"],
-            likes: 29,
-            created_at: new Date().toISOString()
-          }
-        ]);
-      } else if (activeTab === "partners") {
-        setPartners([
-          {
-            user_id: "aarav-id",
-            display_name: "Aarav Mehta",
-            avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-            isl_level: 2,
-            badges: ["Quick Starter", "Fingerspell Pro"],
-            interests: ["Emergency Support", "Travel Signs", "Fingerspelling"]
-          },
-          {
-            user_id: "priya-id",
-            display_name: "Priya Patel",
-            avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150",
-            isl_level: 1,
-            badges: ["First Greeting"],
-            interests: ["Everyday Chats", "Healthcare Vocabulary"]
-          },
-          {
-            user_id: "rohan-id",
-            display_name: "Rohan Das",
-            avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150",
-            isl_level: 3,
-            badges: ["Community Helper", "12-Day Streak"],
-            interests: ["Legal Terms", "Civic Services", "Public Assistance"]
-          }
-        ]);
-      } else if (activeTab === "mentors") {
-        setMentors([
-          {
-            id: "mentor-1",
-            user_id: "anita-id",
-            display_name: "Anita Desai",
-            avatar_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150",
-            isl_level: 3,
-            badges: ["Verified Mentor", "Sanket Expert"],
-            interests: ["Medical ISL", "Interpreter Training"],
-            certification_details: "National ISL Trainer Certification (Level A)",
-            rating: 4.8,
-            is_verified: true,
-            assessment_score: 95,
-            reviews_count: 18
-          },
-          {
-            id: "mentor-2",
-            user_id: "rajesh-id",
-            display_name: "Rajesh Sharma",
-            avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150",
-            isl_level: 3,
-            badges: ["Verified Mentor", "Disaster Specialist"],
-            interests: ["Emergency Response", "Civic Signage"],
-            certification_details: "Disaster Sign Management Specialist (A+ Certified)",
-            rating: 4.9,
-            is_verified: true,
-            assessment_score: 98,
-            reviews_count: 24
-          }
-        ]);
-      } else if (activeTab === "requests") {
-        setIncomingReqs([
-          {
-            id: "req-in-1",
-            user_id: "aarav-id",
-            sender_name: "Aarav Mehta",
-            sender_avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-            receiver_id: "my-id",
-            mentor_id: null,
-            service_type: "practice",
-            description: "Hey! Let's practice fingerspelling and number systems over Zoom this weekend.",
-            location: "Ahmedabad, Gujarat",
-            scheduled_time: new Date(Date.now() + 86400000).toISOString(),
-            status: "pending",
-            created_at: new Date().toISOString()
-          }
-        ]);
-        setOutgoingReqs([
-          {
-            id: "req-out-1",
-            user_id: "my-id",
-            sender_name: "Sanket Citizen",
-            sender_avatar: null,
-            receiver_id: null,
-            mentor_id: "mentor-1",
-            service_type: "general",
-            description: "Need guidance on advancing from Intermediate to Advanced level course.",
-            location: "Vadodara, Gujarat",
-            scheduled_time: new Date(Date.now() + 172800000).toISOString(),
-            status: "pending",
-            created_at: new Date().toISOString()
-          }
-        ]);
-      }
+      if (activeTab === "stories") setStories(FALLBACK_STORIES);
+      else if (activeTab === "partners") setPartners(FALLBACK_PARTNERS);
+      else if (activeTab === "mentors") setMentors(FALLBACK_MENTORS);
       setLoading(false);
     }
   };
@@ -262,7 +231,6 @@ export default function Community() {
       });
       showToast("Practice request sent successfully!");
     } catch (err) {
-      // Mock insert for offline demonstration
       showToast("Sent practice request (Demo Cache Mode)");
       const newReq: PracticeRequest = {
         id: `demo-req-${Math.random()}`,
@@ -281,7 +249,6 @@ export default function Community() {
       setOutgoingReqs(prev => [newReq, ...prev]);
     }
 
-    // Reset Form and close Modal
     setIsRequestModalOpen(false);
     setReqDescription("");
     setReqLocation("");
@@ -293,7 +260,6 @@ export default function Community() {
     try {
       await postToApi(`/community/requests/${reqId}/respond`, { action });
       showToast(`Request successfully ${action}ed!`);
-      // Update state local list
       setIncomingReqs(prev => prev.map(r => r.id === reqId ? { ...r, status: action === "accept" ? "accepted" : "declined" } : r));
     } catch (err) {
       showToast(`Request ${action}ed (Demo Mode)`);
@@ -328,22 +294,29 @@ export default function Community() {
     setTimeout(() => setSuccessMessage(null), 5000);
   };
 
-  // Filters logic for partners
-  const filteredPartners = partners.filter(p => {
+  // Safe Filter Logic
+  const safePartners = Array.isArray(partners) ? partners : FALLBACK_PARTNERS;
+  const filteredPartners = safePartners.filter(p => {
+    if (!p) return false;
     const matchesLevel = partnerLevelFilter === "all" || p.isl_level === parseInt(partnerLevelFilter);
     const matchesInterest = partnerInterestFilter === "all" || 
-      p.interests.some(i => i.toLowerCase().includes(partnerInterestFilter.toLowerCase()));
-    const matchesSearch = p.display_name.toLowerCase().includes(partnerSearch.toLowerCase()) || 
-      p.interests.some(i => i.toLowerCase().includes(partnerSearch.toLowerCase()));
-    return matchesLevel && matchesInterest && matchesSearch;
+      p.interests?.some(i => i.toLowerCase().includes(partnerInterestFilter.toLowerCase()));
+    const nameMatch = p.display_name ? p.display_name.toLowerCase().includes(partnerSearch.toLowerCase()) : false;
+    const interestMatch = p.interests?.some(i => i.toLowerCase().includes(partnerSearch.toLowerCase()));
+    return matchesLevel && matchesInterest && (nameMatch || interestMatch);
   });
 
-  // Filters logic for mentors
-  const filteredMentors = mentors.filter(m => {
+  const safeMentors = Array.isArray(mentors) ? mentors : FALLBACK_MENTORS;
+  const filteredMentors = safeMentors.filter(m => {
+    if (!m) return false;
     if (mentorVerifiedFilter === "verified") return m.is_verified;
     if (mentorVerifiedFilter === "unverified") return !m.is_verified;
     return true;
   });
+
+  const safeStories = Array.isArray(stories) ? stories : FALLBACK_STORIES;
+  const safeIncoming = Array.isArray(incomingReqs) ? incomingReqs : [];
+  const safeOutgoing = Array.isArray(outgoingReqs) ? outgoingReqs : [];
 
   return (
     <div className="space-y-8 py-2 relative">
@@ -420,7 +393,7 @@ export default function Community() {
           }`}
         >
           Inbox & Requests
-          {(incomingReqs.filter(r => r.status === "pending").length > 0) && (
+          {(safeIncoming.filter(r => r?.status === "pending").length > 0) && (
             <span className="h-2 w-2 rounded-full bg-orange-500 inline-block animate-ping" />
           )}
         </button>
@@ -443,7 +416,7 @@ export default function Community() {
               </div>
 
               {loading && <LoadingState />}
-              {!loading && stories.map((post) => (
+              {!loading && safeStories.map((post) => (
                 <Card key={post.id} className="border border-slate-200 dark:border-slate-850 bg-slate-900/40">
                   <CardHeader className="flex flex-row items-center justify-between gap-4 mb-1">
                     <div className="flex items-center gap-2.5">
@@ -461,7 +434,7 @@ export default function Community() {
                     <h3 className="text-sm font-black text-slate-100">{post.title}</h3>
                     <p className="text-xs text-slate-350 leading-relaxed font-semibold">{post.content}</p>
                     <div className="flex flex-wrap gap-1.5 pt-2">
-                      {post.tags.map((tag) => (
+                      {post.tags?.map((tag) => (
                         <Badge key={tag} variant="secondary">#{tag}</Badge>
                       ))}
                     </div>
@@ -604,7 +577,7 @@ export default function Community() {
                       <div>
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-1">Badges</span>
                         <div className="flex flex-wrap gap-1">
-                          {p.badges.map(b => (
+                          {p.badges?.map(b => (
                             <Badge key={b} variant="muted" className="text-[9px] px-1.5 py-0">
                               {b}
                             </Badge>
@@ -614,7 +587,7 @@ export default function Community() {
                       <div>
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-1">Interests</span>
                         <div className="flex flex-wrap gap-1">
-                          {p.interests.map(i => (
+                          {p.interests?.map(i => (
                             <span key={i} className="text-[10px] text-slate-350 bg-slate-950 px-2 py-0.5 rounded border border-slate-850">
                               {i}
                             </span>
@@ -706,7 +679,7 @@ export default function Community() {
                       
                       <div className="flex items-center gap-1 text-xs text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-xl">
                         <Star className="h-3.5 w-3.5 fill-current" />
-                        {m.rating.toFixed(1)}
+                        {m.rating?.toFixed(1) || "5.0"}
                       </div>
                     </CardHeader>
 
@@ -726,7 +699,7 @@ export default function Community() {
                       <div>
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-1">Expertise Domains</span>
                         <div className="flex flex-wrap gap-1">
-                          {m.interests.map(i => (
+                          {m.interests?.map(i => (
                             <span key={i} className="text-[10px] text-slate-350 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-850">
                               {i}
                             </span>
@@ -774,13 +747,13 @@ export default function Community() {
               </h2>
               {loading ? (
                 <LoadingState />
-              ) : incomingReqs.length === 0 ? (
+              ) : safeIncoming.length === 0 ? (
                 <div className="text-center py-8 bg-slate-900/10 border border-slate-850 rounded-2xl">
                   <p className="text-2xs text-slate-500">No incoming practice or assistance requests.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {incomingReqs.map(req => (
+                  {safeIncoming.map(req => (
                     <Card key={req.id} className="border border-slate-200 dark:border-slate-850 bg-slate-900/40">
                       <CardHeader className="flex flex-row items-center justify-between gap-3 mb-2">
                         <div className="flex items-center gap-2.5">
@@ -845,13 +818,13 @@ export default function Community() {
               </h2>
               {loading ? (
                 <LoadingState />
-              ) : outgoingReqs.length === 0 ? (
+              ) : safeOutgoing.length === 0 ? (
                 <div className="text-center py-8 bg-slate-900/10 border border-slate-850 rounded-2xl">
                   <p className="text-2xs text-slate-500">You have not sent any requests yet.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {outgoingReqs.map(req => (
+                  {safeOutgoing.map(req => (
                     <Card key={req.id} className="border border-slate-200 dark:border-slate-850 bg-slate-900/40">
                       <CardHeader className="flex flex-row items-center justify-between gap-3 mb-2">
                         <div className="space-y-0.5">
@@ -934,7 +907,7 @@ export default function Community() {
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">Interests</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedProfile.interests.map(i => (
+                  {selectedProfile.interests?.map(i => (
                     <span key={i} className="text-xs text-slate-300 bg-slate-950 border border-slate-850 px-2.5 py-1 rounded-xl">
                       {i}
                     </span>
@@ -945,7 +918,7 @@ export default function Community() {
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">Badges Earned</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedProfile.badges.map(b => (
+                  {selectedProfile.badges?.map(b => (
                     <Badge key={b} variant="muted" className="text-xs px-2 py-0.5">
                       {b}
                     </Badge>
@@ -1006,7 +979,7 @@ export default function Community() {
               
               <div className="flex items-center gap-1.5 text-sm text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-xl">
                 <Star className="h-4 w-4 fill-current" />
-                {selectedMentor.rating.toFixed(1)}
+                {selectedMentor.rating?.toFixed(1) || "5.0"}
               </div>
             </div>
 
@@ -1034,7 +1007,7 @@ export default function Community() {
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">Specialties & Interests</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedMentor.interests.map(i => (
+                  {selectedMentor.interests?.map(i => (
                     <span key={i} className="text-xs text-slate-350 bg-slate-950 border border-slate-850 px-2.5 py-1 rounded-xl">
                       {i}
                     </span>

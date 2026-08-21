@@ -29,9 +29,22 @@ interface InstitutionItem {
   description: string;
 }
 
+const FALLBACK_REQUESTS: RequestDetail[] = [
+  {
+    id: "fallback-req-1",
+    service_type: "medical_emergency",
+    description: "Dental appointment assistance at Community Clinic",
+    location: "Sector 12, Dwarka, New Delhi",
+    scheduled_time: new Date().toISOString(),
+    status: "assigned",
+    interpreter_name: "Rajesh Kumar (Certified ISL Level 3)",
+    created_at: new Date().toISOString()
+  }
+];
+
 export default function Assist() {
   const navigate = useNavigate();
-  const [requests, setRequests] = useState<RequestDetail[]>([]);
+  const [requests, setRequests] = useState<RequestDetail[]>(FALLBACK_REQUESTS);
   const [loading, setLoading] = useState(true);
   
   // Navigation Tabs: "portals" (Service Workflows & QR) vs "requests" (Interpreter Match)
@@ -93,23 +106,15 @@ export default function Assist() {
   useEffect(() => {
     fetchFromApi<RequestDetail[]>("/assist/requests")
       .then((data) => {
-        setRequests(data);
+        if (Array.isArray(data)) {
+          setRequests(data);
+        } else {
+          setRequests(FALLBACK_REQUESTS);
+        }
         setLoading(false);
       })
       .catch(() => {
-        // Fallback mock requests
-        setRequests([
-          {
-            id: "fallback-req-1",
-            service_type: "medical_emergency",
-            description: "Dental appointment assistance at Community Clinic",
-            location: "Sector 12, Dwarka, New Delhi",
-            scheduled_time: new Date().toISOString(),
-            status: "assigned",
-            interpreter_name: "Rajesh Kumar (Certified ISL Level 3)",
-            created_at: new Date().toISOString()
-          }
-        ]);
+        setRequests(FALLBACK_REQUESTS);
         setLoading(false);
       });
   }, []);
@@ -131,7 +136,9 @@ export default function Assist() {
           scheduled_time: scheduledTime
         })
       });
-      setRequests((prev) => [newReq, ...prev]);
+      if (newReq && typeof newReq === "object") {
+        setRequests((prev) => [newReq, ...prev]);
+      }
       setDescription("");
       setLocation("");
       setDateStr("");
@@ -159,17 +166,17 @@ export default function Assist() {
   };
 
   const getServiceTypeBadge = (t: string) => {
-    const formatted = t.replace("_", " ").toUpperCase();
-    if (t.includes("emergency") || t.includes("medical")) return <Badge variant="danger">{formatted}</Badge>;
-    if (t.includes("legal")) return <Badge variant="saffron">{formatted}</Badge>;
+    const formatted = (t || "").replace("_", " ").toUpperCase();
+    if (t?.includes("emergency") || t?.includes("medical")) return <Badge variant="danger">{formatted}</Badge>;
+    if (t?.includes("legal")) return <Badge variant="saffron">{formatted}</Badge>;
     return <Badge variant="secondary">{formatted}</Badge>;
   };
 
   const getStatusBadge = (s: string) => {
-    const st = s.toLowerCase();
+    const st = (s || "").toLowerCase();
     if (st === "assigned") return <Badge variant="success">ASSIGNED</Badge>;
     if (st === "pending") return <Badge variant="saffron">FINDING INTERPRETER</Badge>;
-    return <Badge variant="muted">{s.toUpperCase()}</Badge>;
+    return <Badge variant="muted">{(s || "PENDING").toUpperCase()}</Badge>;
   };
 
   const filteredInstitutions = institutions.filter(inst => {
@@ -406,10 +413,10 @@ export default function Assist() {
 
                 {loading && <LoadingState />}
 
-                {!loading && requests.length === 0 ? (
+                {!loading && (Array.isArray(requests) ? requests : FALLBACK_REQUESTS).length === 0 ? (
                   <p className="text-xs text-slate-500 font-semibold text-center py-6">You haven't posted any interpreter requests.</p>
                 ) : (
-                  requests.map((req) => (
+                  (Array.isArray(requests) ? requests : FALLBACK_REQUESTS).map((req) => (
                     <Card key={req.id} className="border border-slate-200 dark:border-slate-800/80">
                       <div className="space-y-4">
                         <div className="flex flex-wrap justify-between items-start gap-3">
@@ -429,11 +436,11 @@ export default function Assist() {
                           </div>
                           <div className="flex items-center gap-1.5 font-semibold">
                             <Calendar className="h-4 w-4 text-teal-600 shrink-0" />
-                            <span>{new Date(req.scheduled_time).toLocaleDateString()}</span>
+                            <span>{req.scheduled_time ? new Date(req.scheduled_time).toLocaleDateString() : "N/A"}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-semibold">
                             <Clock className="h-4 w-4 text-teal-600 shrink-0" />
-                            <span>{new Date(req.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>{req.scheduled_time ? new Date(req.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}</span>
                           </div>
                         </div>
 
