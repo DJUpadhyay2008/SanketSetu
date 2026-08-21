@@ -98,6 +98,37 @@ class RecommendationResponse(BaseModel):
     recommended_lesson_id: Optional[str] = None
     recommended_lesson_title: Optional[str] = None
 
+class ISLSignResponse(BaseModel):
+    id: str
+    term: str
+    category: Optional[str] = None
+    subcategory: Optional[str] = None
+    difficulty: str
+    meaning: Optional[str] = None
+    description: Optional[str] = None
+    video_url: Optional[str] = None
+    video_type: str = "none"
+    source: str = "ISLRTC"
+    source_url: str = "https://islrtc.nic.in/isl-dictionary/"
+    is_embeddable: bool = True
+    thumbnail_url: Optional[str] = None
+    related_signs: List[str] = []
+
+class ISLSignCreate(BaseModel):
+    term: str
+    category: Optional[str] = None
+    subcategory: Optional[str] = None
+    difficulty: str = "Beginner"
+    meaning: Optional[str] = None
+    description: Optional[str] = None
+    video_url: Optional[str] = None
+    video_type: str = "none"
+    source: str = "ISLRTC"
+    source_url: str = "https://islrtc.nic.in/isl-dictionary/"
+    is_embeddable: bool = True
+    thumbnail_url: Optional[str] = None
+    related_signs: List[str] = []
+
 # ==========================================
 # UTILS & HELPER ENGINES
 # ==========================================
@@ -688,3 +719,139 @@ async def get_emergency_pack():
         "signs": EMERGENCY_SIGNS,
         "cached_at": datetime.utcnow().isoformat()
     }
+
+
+# ==========================================
+# ISLRTC VERIFIED SIGNS API
+# ==========================================
+
+@router.get("/signs", response_model=List[ISLSignResponse])
+async def list_isl_signs(
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """List verified ISLRTC ISL signs with optional filters."""
+    query = db.query(models.ISLSign)
+    if category and category != "ALL":
+        query = query.filter(models.ISLSign.category == category)
+    if difficulty and difficulty != "ALL":
+        query = query.filter(models.ISLSign.difficulty == difficulty)
+    if search:
+        query = query.filter(models.ISLSign.term.ilike(f"%{search}%"))
+        
+    signs = query.all()
+    return [
+        ISLSignResponse(
+            id=str(s.id),
+            term=s.term,
+            category=s.category,
+            subcategory=s.subcategory,
+            difficulty=s.difficulty,
+            meaning=s.meaning,
+            description=s.description,
+            video_url=s.video_url,
+            video_type=s.video_type or "none",
+            source=s.source or "ISLRTC",
+            source_url=s.source_url or "https://islrtc.nic.in/isl-dictionary/",
+            is_embeddable=s.is_embeddable,
+            thumbnail_url=s.thumbnail_url,
+            related_signs=s.related_signs or []
+        )
+        for s in signs
+    ]
+
+@router.get("/signs/{term_or_id}", response_model=ISLSignResponse)
+async def get_isl_sign_detail(
+    term_or_id: str,
+    db: Session = Depends(get_db)
+):
+    """Retrieve detailed ISL sign information by term (case-insensitive) or UUID."""
+    sign = None
+    try:
+        sign_uuid = uuid.UUID(term_or_id)
+        sign = db.query(models.ISLSign).filter(models.ISLSign.id == sign_uuid).first()
+    except ValueError:
+        pass
+
+    if not sign:
+        sign = db.query(models.ISLSign).filter(models.ISLSign.term.ilike(term_or_id)).first()
+
+    if not sign:
+        raise HTTPException(status_code=404, detail=f"ISL sign for '{term_or_id}' not found in ISLRTC index.")
+
+    return ISLSignResponse(
+        id=str(sign.id),
+        term=sign.term,
+        category=sign.category,
+        subcategory=sign.subcategory,
+        difficulty=sign.difficulty,
+        meaning=sign.meaning,
+        description=sign.description,
+        video_url=sign.video_url,
+        video_type=sign.video_type or "none",
+        source=sign.source or "ISLRTC",
+        source_url=sign.source_url or "https://islrtc.nic.in/isl-dictionary/",
+        is_embeddable=sign.is_embeddable,
+        thumbnail_url=sign.thumbnail_url,
+        related_signs=sign.related_signs or []
+    )
+
+@router.post("/signs", response_model=ISLSignResponse)
+async def create_or_update_isl_sign(
+    payload: ISLSignCreate,
+    db: Session = Depends(get_db)
+):
+    """Create or update an ISL sign entry (Internal content management)."""
+    existing = db.query(models.ISLSign).filter(models.ISLSign.term.ilike(payload.term)).first()
+    if existing:
+        existing.category = payload.category
+        existing.subcategory = payload.subcategory
+        existing.difficulty = payload.difficulty
+        existing.meaning = payload.meaning
+        existing.description = payload.description
+        existing.video_url = payload.video_url
+        existing.video_type = payload.video_type
+        existing.source = payload.source
+        existing.source_url = payload.source_url
+        existing.is_embeddable = payload.is_embeddable
+        existing.thumbnail_url = payload.thumbnail_url
+        existing.related_signs = payload.related_signs
+        sign = existing
+    else:
+        sign = models.ISLSign(
+            term=payload.term,
+            category=payload.category,
+            subcategory=payload.subcategory,
+            difficulty=payload.difficulty,
+            meaning=payload.meaning,
+            description=payload.description,
+            video_url=payload.video_url,
+            video_type=payload.video_type,
+            source=payload.source,
+            source_url=payload.source_url,
+            is_embeddable=payload.is_embeddable,
+            thumbnail_url=payload.thumbnail_url,
+            related_signs=payload.related_signs
+        )
+        db.add(sign)
+    db.commit()
+    db.refresh(sign)
+    
+    return ISLSignResponse(
+        id=str(sign.id),
+        term=sign.term,
+        category=sign.category,
+        subcategory=sign.subcategory,
+        difficulty=sign.difficulty,
+        meaning=sign.meaning,
+        description=sign.description,
+        video_url=sign.video_url,
+        video_type=sign.video_type or "none",
+        source=sign.source or "ISLRTC",
+        source_url=sign.source_url or "https://islrtc.nic.in/isl-dictionary/",
+        is_embeddable=sign.is_embeddable,
+        thumbnail_url=sign.thumbnail_url,
+        related_signs=sign.related_signs or []
+    )

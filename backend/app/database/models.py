@@ -126,6 +126,26 @@ class Sign(Base):
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+class ISLSign(Base):
+    __tablename__ = "isl_signs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    term = Column(String(255), nullable=False, index=True, unique=True)
+    category = Column(String(100), nullable=True, index=True)
+    subcategory = Column(String(100), nullable=True)
+    difficulty = Column(String(50), default="Beginner", nullable=False)
+    meaning = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
+    video_url = Column(String(500), nullable=True)
+    video_type = Column(String(50), default="none", nullable=False) # youtube, direct, none
+    source = Column(String(255), default="ISLRTC", nullable=False)
+    source_url = Column(String(500), default="https://islrtc.nic.in/isl-dictionary/", nullable=False)
+    is_embeddable = Column(Boolean, default=True, nullable=False)
+    thumbnail_url = Column(String(500), nullable=True)
+    related_signs = Column(JSON, default=list, nullable=True) # list of related sign terms
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
 class Quiz(Base):
     __tablename__ = "quizzes"
 

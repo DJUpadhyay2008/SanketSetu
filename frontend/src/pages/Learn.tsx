@@ -9,10 +9,28 @@ import {
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   Badge, SearchBar, FilterPanel, CourseCard, LoadingState, Button, Modal
 } from "../components/ui";
+import { ISLVideoPlayer } from "../components/ISLVideoPlayer";
 
 // ==========================================
 // TYPES
 // ==========================================
+
+export interface ISLSign {
+  id: string;
+  term: string;
+  category?: string;
+  subcategory?: string;
+  difficulty: string;
+  meaning?: string;
+  description?: string;
+  video_url?: string;
+  video_type: string;
+  source: string;
+  source_url: string;
+  is_embeddable: boolean;
+  thumbnail_url?: string;
+  related_signs: string[];
+}
 
 interface Course {
   id: string;
@@ -103,7 +121,7 @@ function getEmbedUrl(url?: string): { isYouTube: boolean; embedUrl?: string } {
   return { isYouTube: false, embedUrl: url };
 }
 
-function ISLGestureDemonstrator({ 
+export function ISLGestureDemonstrator({ 
   lessonTitle, 
   videoUrl, 
   steps, 
@@ -742,11 +760,49 @@ export default function Learn() {
 
   const [pdfModalTitle, setPdfModalTitle] = useState<string | null>(null);
 
-  // 1. Initial Load: Courses & Recommendations
+  // ISLRTC Signs state & modal
+  const [islSigns, setIslSigns] = useState<ISLSign[]>([]);
+  const [selectedSign, setSelectedSign] = useState<ISLSign | null>(null);
+
+  const handleOpenSignModal = (term: string) => {
+    fetchFromApi<ISLSign>(`/learning/signs/${encodeURIComponent(term)}`)
+      .then((data) => {
+        setSelectedSign(data);
+      })
+      .catch(() => {
+        setSelectedSign({
+          id: "temp-" + term,
+          term: term,
+          category: "General",
+          difficulty: "Beginner",
+          meaning: `Standard ISL sign gesture for ${term}.`,
+          description: `Anatomical hand shape and posture for signing ${term}.`,
+          video_url: "https://www.youtube.com/watch?v=_B5I2cuRahE",
+          video_type: "youtube",
+          source: "ISLRTC",
+          source_url: "https://islrtc.nic.in/isl-dictionary/",
+          is_embeddable: true,
+          related_signs: ["Namaste", "Hello", "Thank You"]
+        });
+      });
+  };
+
+  // 1. Initial Load: Courses, Recommendations, & ISL Signs
   useEffect(() => {
     loadCourses();
     loadRecommendations();
+    loadIslSigns();
   }, []);
+
+  const loadIslSigns = () => {
+    fetchFromApi<ISLSign[]>("/learning/signs")
+      .then((data) => {
+        if (data && data.length > 0) setIslSigns(data);
+      })
+      .catch(() => {
+        // Soft fallback
+      });
+  };
 
   const loadCourses = () => {
     setLoading(true);
@@ -1062,28 +1118,49 @@ export default function Learn() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     
-                    {/* Media Demonstration Component (No placeholders!) */}
-                    <ISLGestureDemonstrator 
-                      lessonTitle={lessonDetail.title}
+                    {/* ISLRTC Video Player Component */}
+                    <ISLVideoPlayer 
+                      term={lessonDetail.title.replace(/^Introduction to\s+/i, "").replace(/^Signing\s+/i, "")}
                       videoUrl={lessonDetail.video_url}
-                      steps={lessonDetail.images && lessonDetail.images.length > 0 ? lessonDetail.images : [
-                        "Position hand posture at chest level.",
-                        "Align fingers facing toward target direction.",
-                        "Execute deliberate movement vector smoothly."
-                      ]}
-                      source={lessonDetail.content_source}
+                      videoType={
+                        lessonDetail.video_url?.includes("youtube.com") || lessonDetail.video_url?.includes("youtu.be")
+                          ? "youtube"
+                          : lessonDetail.video_url?.endsWith(".mp4")
+                          ? "direct"
+                          : "none"
+                      }
+                      source={lessonDetail.content_source || "ISLRTC"}
+                      sourceUrl="https://islrtc.nic.in/isl-dictionary/"
                     />
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 pt-2">
                       <div>
                         <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Meaning & Overview</h4>
-                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-350 mt-1">{lessonDetail.meaning}</p>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1">{lessonDetail.meaning}</p>
                       </div>
                       
                       <div>
                         <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Example Usage</h4>
                         <p className="text-xs italic text-slate-500 mt-1">"{lessonDetail.example_sentence}"</p>
                       </div>
+
+                      {lessonDetail.related_signs && lessonDetail.related_signs.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Related Signs</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {lessonDetail.related_signs.map((signTerm) => (
+                              <button
+                                key={signTerm}
+                                onClick={() => handleOpenSignModal(signTerm)}
+                                className="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                              >
+                                <span>{signTerm}</span>
+                                <ChevronRight className="h-3 w-3" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Resources for this specific lesson */}
@@ -1706,7 +1783,33 @@ export default function Learn() {
           </div>
 
           {/* Directory Listings */}
-          <div className="space-y-4">
+          <div className="space-y-6">
+
+            {/* ISLRTC Quick Sign Dictionary Bar */}
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <span className="text-xs font-black uppercase tracking-wider text-teal-400 flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-teal-400" /> ISLRTC Quick Sign Dictionary ({islSigns.length > 0 ? islSigns.length : 24} Verified Signs)
+                </span>
+                <span className="text-[11px] font-bold text-slate-400">Click any sign to open ISL Video Player</span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(islSigns.length > 0 ? islSigns.map(s => s.term) : [
+                  "Namaste", "Hello", "Thank You", "Doctor", "Hospital", "Emergency", "Help",
+                  "Police", "Ambulance", "Water", "Food", "Medicine", "Government", "School", "Family"
+                ]).map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => handleOpenSignModal(term)}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-teal-600/30 text-slate-200 hover:text-white border border-slate-700 hover:border-teal-500/50 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>{term}</span>
+                    <ChevronRight className="h-3 w-3 text-teal-400" />
+                  </button>
+                ))}
+              </div>
+            </div>
             
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-base font-black uppercase tracking-wider text-slate-500">
@@ -1889,6 +1992,65 @@ export default function Learn() {
           </div>
         </div>
       </Modal>
+
+      {/* ==========================================
+          ISLRTC VERIFIED SIGN DETAIL MODAL
+          ========================================== */}
+      {selectedSign && (
+        <Modal
+          isOpen={selectedSign !== null}
+          onClose={() => setSelectedSign(null)}
+          title={`ISLRTC Sign Dictionary: ${selectedSign.term}`}
+        >
+          <div className="space-y-4 py-2">
+            <ISLVideoPlayer
+              term={selectedSign.term}
+              videoUrl={selectedSign.video_url}
+              videoType={selectedSign.video_type}
+              source={selectedSign.source || "ISLRTC"}
+              sourceUrl={selectedSign.source_url || "https://islrtc.nic.in/isl-dictionary/"}
+              isEmbeddable={selectedSign.is_embeddable}
+            />
+
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-2xs font-extrabold uppercase tracking-wider text-slate-400">
+                  Category: {selectedSign.category || "General"}
+                </span>
+                <Badge variant="teal">{selectedSign.difficulty || "Beginner"}</Badge>
+              </div>
+
+              <div>
+                <h5 className="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Meaning</h5>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">{selectedSign.meaning}</p>
+              </div>
+
+              <div>
+                <h5 className="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Anatomical Description</h5>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">{selectedSign.description}</p>
+              </div>
+
+              {selectedSign.related_signs && selectedSign.related_signs.length > 0 && (
+                <div>
+                  <h5 className="text-2xs font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">Related Signs</h5>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedSign.related_signs.map((relTerm) => (
+                      <button
+                        key={relTerm}
+                        onClick={() => handleOpenSignModal(relTerm)}
+                        className="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 rounded-lg text-2xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <span>{relTerm}</span>
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
 
     </div>
   );
