@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
-  Building2, MapPin, ArrowLeft, PhoneCall, Mic, MicOff, MessageSquare, 
-  CheckCircle2, ChevronRight, HelpCircle, AlertCircle, Compass, CheckSquare
+  Building2, MapPin, ArrowLeft, CheckCircle2, ChevronRight, HelpCircle, 
+  AlertCircle, Compass, CheckSquare
 } from "lucide-react";
 import { Button, Badge } from "../components/ui";
 
@@ -38,14 +38,6 @@ export default function AssistPortal() {
 
   // Assistance requested state
   const [assistanceRequested, setAssistanceRequested] = useState(false);
-
-  // Communication Helper state
-  const [commMode, setCommMode] = useState<"text" | "speech" | "isl">("text");
-  const [userText, setUserText] = useState("");
-  const [officerText, setOfficerText] = useState("");
-  const [speechTranscript, setSpeechTranscript] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [recognitionInstance, setRecognitionInstance] = useState<any>(null);
 
   // Static Institution Profile data
   const institutionDetails: Record<string, { title: string; type: string; address: string; workflows: string[] }> = {
@@ -93,57 +85,6 @@ export default function AssistPortal() {
       setActiveWorkflow(currentInst.workflows[0]);
     }
   }, [slug]);
-
-  // Speech Recognition hook
-  useEffect(() => {
-    // Check for web speech API
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-IN"; // English with Indian accent / Hindi support
-
-      recognition.onresult = (event: any) => {
-        let current = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            current += event.results[i][0].transcript + " ";
-          }
-        }
-        if (current) {
-          setSpeechTranscript((prev) => prev + current);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error("Speech Recognition Error:", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      setRecognitionInstance(recognition);
-    }
-  }, []);
-
-  const toggleListening = () => {
-    if (!recognitionInstance) {
-      alert("Speech recognition is not supported in this browser. Please use Chrome or Safari.");
-      return;
-    }
-
-    if (isListening) {
-      recognitionInstance.stop();
-      setIsListening(false);
-    } else {
-      setSpeechTranscript("");
-      recognitionInstance.start();
-      setIsListening(true);
-    }
-  };
 
   const handleGenerateToken = (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,11 +154,9 @@ export default function AssistPortal() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left/Center Columns: Accessible Workflows */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/85 overflow-hidden shadow-xs flex flex-col md:flex-row min-h-[500px]">
+      {/* Accessible Workflows Container */}
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/85 overflow-hidden shadow-xs flex flex-col md:flex-row min-h-[500px]">
             
             {/* Sidebar Navigation inside Portal */}
             <div className="w-full md:w-56 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 p-4 space-y-2">
@@ -739,154 +678,8 @@ export default function AssistPortal() {
 
             </div>
           </div>
-        </div>
 
-        {/* Right Column: SANKET COMMUNICATION HELPER WIDGET */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[520px]">
-            {/* Header */}
-            <div className="bg-slate-950 p-4.5 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-teal-500 flex items-center justify-center">
-                  <MessageSquare className="h-4.5 w-4.5 text-slate-950" />
-                </div>
-                <div className="space-y-0.5">
-                  <h3 className="font-extrabold text-sm tracking-tight">Communication Assist</h3>
-                  <p className="text-[9px] text-teal-350 font-bold uppercase tracking-wider">At-Counter Support Interface</p>
-                </div>
-              </div>
-
-              <div className="flex bg-slate-800 p-0.5 rounded-lg">
-                <button 
-                  onClick={() => setCommMode("text")}
-                  className={`px-2 py-1 text-[9px] font-black uppercase rounded-md transition-colors cursor-pointer ${commMode === "text" ? "bg-teal-500 text-slate-950" : "text-slate-400"}`}
-                >
-                  Text
-                </button>
-                <button 
-                  onClick={() => setCommMode("speech")}
-                  className={`px-2 py-1 text-[9px] font-black uppercase rounded-md transition-colors cursor-pointer ${commMode === "speech" ? "bg-teal-500 text-slate-950" : "text-slate-400"}`}
-                >
-                  Speech
-                </button>
-                <button 
-                  onClick={() => setCommMode("isl")}
-                  className={`px-2 py-1 text-[9px] font-black uppercase rounded-md transition-colors cursor-pointer ${commMode === "isl" ? "bg-teal-500 text-slate-950" : "text-slate-400"}`}
-                >
-                  Live
-                </button>
-              </div>
-            </div>
-
-            {/* Mode workspaces */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs font-semibold">
-              
-              {/* Text Mode */}
-              {commMode === "text" && (
-                <div className="space-y-4 h-full flex flex-col justify-between">
-                  <div className="space-y-3.5 flex-1">
-                    {/* User message */}
-                    <div className="space-y-1 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/50 dark:border-slate-800">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-teal-500 block">Deaf Beneficiary Text</span>
-                      <p className="text-slate-850 dark:text-slate-200 text-xs">
-                        {userText || <span className="italic text-slate-400 font-normal">Type what you want to communicate below...</span>}
-                      </p>
-                    </div>
-
-                    {/* Officer message */}
-                    <div className="space-y-1 bg-orange-50/20 dark:bg-orange-950/10 p-3 rounded-2xl border border-orange-200/30 dark:border-orange-900/20">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-orange-500 block">Counter Officer Response</span>
-                      <p className="text-slate-850 dark:text-slate-200 text-xs">
-                        {officerText || <span className="italic text-slate-400 font-normal">Officer can type reply in counter input...</span>}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Type message for Officer</label>
-                      <input 
-                        type="text" 
-                        value={userText}
-                        onChange={(e) => setUserText(e.target.value)}
-                        placeholder="e.g. I need to apply for Aadhaar correction..."
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-800 dark:text-white"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Officer Reply Input</label>
-                      <input 
-                        type="text" 
-                        value={officerText}
-                        onChange={(e) => setOfficerText(e.target.value)}
-                        placeholder="e.g. Please present your original school marksheet."
-                        className="w-full rounded-xl border border-slate-350 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-800 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Speech to Text Mode */}
-              {commMode === "speech" && (
-                <div className="space-y-4 h-full flex flex-col justify-between">
-                  <div className="flex-1 space-y-4">
-                    <div className="bg-teal-500/5 border border-teal-500/10 p-3 rounded-2xl text-[10px] text-teal-600 dark:text-teal-450 leading-relaxed">
-                      ★ <strong>Speech-to-Text:</strong> Ask the Counter Officer to talk. Their voice will be translated into accessible reading text.
-                    </div>
-
-                    <div className="border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 min-h-[160px] bg-slate-50/50 dark:bg-slate-950">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Transcribed Voice Text</span>
-                      {speechTranscript ? (
-                        <p className="text-slate-850 dark:text-slate-200 text-xs leading-relaxed font-bold">{speechTranscript}</p>
-                      ) : (
-                        <p className="text-slate-400 font-normal italic text-xs">Waiting for speech... Press "Start Listening" below and talk clearly.</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-450">Speech Recognition Status</span>
-                    <Button 
-                      onClick={toggleListening}
-                      variant={isListening ? "danger" : "secondary"}
-                      className="px-4.5 py-2 text-2xs uppercase tracking-wider font-extrabold flex items-center gap-1.5"
-                    >
-                      {isListening ? (
-                        <>
-                          <MicOff className="h-3.5 w-3.5 animate-pulse" /> Stop Listening
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="h-3.5 w-3.5" /> Start Listening
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Live ISL Interpreter */}
-              {commMode === "isl" && (
-                <div className="space-y-4 text-center py-8">
-                  <div className="h-14 w-14 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center mx-auto">
-                    <PhoneCall className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-widest">Sanket Live Video Relay</h4>
-                    <p className="text-2xs text-slate-450 leading-relaxed font-semibold max-w-xs mx-auto">
-                      <strong>Coming Soon:</strong> Real-time certified sign language translator video relay pilot. Currently being integrated with district collectors and civic bureaus.
-                    </p>
-                  </div>
-                  <div className="border border-dashed border-slate-250 dark:border-slate-800 p-4 rounded-xl text-[10px] text-slate-450 font-normal leading-normal italic">
-                    Note: Unrestricted sign-to-text real-time AI translation is not claimed. We connect users to human volunteers.
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </div>
-
+          {/* Sandbox note */}
           <div className="rounded-2xl bg-orange-50/20 dark:bg-orange-950/10 p-4 border border-orange-200/35 dark:border-orange-900/30 text-2xs text-slate-650 dark:text-slate-400 flex gap-2.5 items-start">
             <AlertCircle className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
             <div className="space-y-1 font-semibold leading-relaxed">
@@ -895,7 +688,6 @@ export default function AssistPortal() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

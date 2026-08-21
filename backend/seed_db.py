@@ -43,7 +43,7 @@ def seed():
             difficulty="Beginner",
             category="Everyday Communication",
             xp_reward=50,
-            video_url="https://yhyjigvxjxtaykchffpd.supabase.co/storage/v1/object/public/sanket-assets/namaste.mp4",
+            video_url="/videos/namaste.mp4",
             images=["Bring both palms flat together at chest level.", "Slightly bow your head as a sign of respect."],
             meaning="A traditional Indian greeting meaning 'I bow to the divine in you'.",
             example_sentence="Sign 'Namaste' when meeting someone for the first time or welcoming guests.",
@@ -110,7 +110,7 @@ def seed():
             difficulty="Intermediate",
             category="Healthcare",
             xp_reward=100,
-            video_url="https://yhyjigvxjxtaykchffpd.supabase.co/storage/v1/object/public/sanket-assets/doctor.mp4",
+            video_url="/videos/doctor.mp4",
             images=[
                 "Extend your left arm forward, wrist facing upward.",
                 "Place your index and middle fingers of your right hand on your left wrist pulse point to simulate checking a pulse."
@@ -180,7 +180,7 @@ def seed():
             difficulty="Advanced",
             category="Emergency",
             xp_reward=150,
-            video_url="https://yhyjigvxjxtaykchffpd.supabase.co/storage/v1/object/public/sanket-assets/help.mp4",
+            video_url="/videos/help.mp4",
             images=[
                 "Cross your arms at your chest to signal danger/alert.",
                 "Place your right closed fist onto your open left palm and lift them up together twice to signal help."
