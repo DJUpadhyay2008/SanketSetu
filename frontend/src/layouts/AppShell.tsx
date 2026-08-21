@@ -68,6 +68,9 @@ export default function AppShell({ children }: AppShellProps) {
   const [fontScale, setFontScale] = useState<"normal" | "large" | "xlarge">(() => {
     return (localStorage.getItem("accessibility_font_scale") as any) || "normal";
   });
+  const [audioDescriptions, setAudioDescriptions] = useState(() => {
+    return localStorage.getItem("accessibility_audio_desc") === "true";
+  });
 
   // Modal / Drawer Toggles
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -141,6 +144,25 @@ export default function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     localStorage.setItem("accessibility_font_scale", fontScale);
   }, [fontScale]);
+
+  // Save audio descriptions preference & announce state
+  useEffect(() => {
+    localStorage.setItem("accessibility_audio_desc", audioDescriptions ? "true" : "false");
+  }, [audioDescriptions]);
+
+  const toggleAudioDescriptions = () => {
+    const nextState = !audioDescriptions;
+    setAudioDescriptions(nextState);
+    if (nextState && typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        const utterance = new SpeechSynthesisUtterance("Audio sign descriptions activated");
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        // ignore
+      }
+    }
+  };
 
   const navItems = [
     { name: "Home", path: "/", icon: Home },
@@ -487,10 +509,13 @@ export default function AppShell({ children }: AppShellProps) {
               </p>
             </div>
             <button
-              className="p-2 rounded-lg border text-2xs font-extrabold flex items-center gap-1 bg-slate-950 text-slate-400 border-slate-800 cursor-pointer"
+              onClick={toggleAudioDescriptions}
+              className={`p-2 rounded-lg border text-2xs font-extrabold flex items-center gap-1 cursor-pointer transition-all ${
+                audioDescriptions ? "bg-emerald-600 text-white border-emerald-500 shadow-sm" : "bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200"
+              }`}
             >
               <Volume2 className="h-4.5 w-4.5" />
-              <span>OFF</span>
+              <span>{audioDescriptions ? "ACTIVE" : "ENABLE"}</span>
             </button>
           </div>
         </div>
