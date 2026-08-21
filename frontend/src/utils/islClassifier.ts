@@ -48,6 +48,31 @@ export const SUPPORTED_VOCABULARY = [
   { term: "Friend", category: "Social", description: "Both index fingers hooked or touching together." },
   { term: "Home", category: "Everyday", description: "Fingertips forming roof/tent shape." },
   { term: "School / College", category: "Education", description: "Both flat palms clapping horizontally." },
+  { term: "Work / Job", category: "Workplace", description: "Two fists tapping together at wrist level." },
+  { term: "Family", category: "Social", description: "Both open hands forming a circle together." },
+  { term: "Book / Read", category: "Education", description: "Both open palms opening side by side like a book." },
+  { term: "Write / Pen", category: "Education", description: "Pinched fingers tracing across flat open palm." },
+  { term: "Happy", category: "Expressions", description: "Open palm brushing upward near chest." },
+  { term: "Sad", category: "Expressions", description: "Open palm facing inward sliding down face." },
+  { term: "Search / Look", category: "Expressions", description: "V-sign pointing directly toward eyes." },
+  { term: "Like", category: "Expressions", description: "Thumb & index finger extending from chest level." },
+  { term: "Dislike", category: "Expressions", description: "Thumb pointing down with index extended." },
+  { term: "Question / Why", category: "Communication", description: "Index finger curved tapping near chin/face." },
+  { term: "Tea / Coffee", category: "Daily Needs", description: "C-shaped hand gesture bringing cup to mouth." },
+  { term: "Milk", category: "Daily Needs", description: "Squeezing fist motion near chest level." },
+  { term: "Sleep / Bed", category: "Daily Needs", description: "Palms pressed together resting near side of head." },
+  { term: "Clean / Wash", category: "Everyday", description: "Two open palms rubbing flat together." },
+  { term: "Open", category: "Actions", description: "Both palms opening outward from center." },
+  { term: "Close", category: "Actions", description: "Both palms bringing together into fists." },
+  { term: "Hear / Listen", category: "Senses", description: "Index finger pointing directly at ear." },
+  { term: "Speak / Talk", category: "Communication", description: "Index & middle finger moving near mouth." },
+  { term: "Think / Idea", category: "Cognition", description: "Index finger tapping forehead." },
+  { term: "Remember", category: "Cognition", description: "Thumb tip tapping forehead area." },
+  { term: "Forget", category: "Cognition", description: "Hand wiping horizontally across forehead." },
+  { term: "Wait", category: "Communication", description: "Open palm waving gently down near waist." },
+  { term: "Win / Success", category: "Expressions", description: "Raised fist victory pose high in frame." },
+  { term: "Peace", category: "Expressions", description: "V-sign held steady near heart level." },
+  { term: "World / Earth", category: "Geography", description: "Both hands forming a sphere shape in air." },
   { term: "Emergency", category: "Healthcare", description: "Fist raised near shoulder shaking urgently." },
   { term: "Stop", category: "Safety", description: "Flat vertical open palm facing forward to halt." },
   { term: "OK", category: "Social", description: "Pinch between Thumb and Index tip with 3 fingers open." },
@@ -125,6 +150,36 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
 
     const h1ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h1, t, [2, 6, 10, 14, 18][i])).length;
     const h2ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h2, t, [2, 6, 10, 14, 18][i])).length;
+
+    // SLEEP / BED: Palms pressed together resting near side of head
+    if (h1[0].y < 0.38 && h2[0].y < 0.38 && wristDist < 0.35) {
+      return {
+        sign: "Sleep / Bed",
+        confidence: 0.95,
+        feedback: "✓ Joined palms resting near side of head. Sleep / Bed sign recognized!",
+        handsCount: hands.length,
+      };
+    }
+
+    // CLEAN / WASH: Two open palms rubbing flat together
+    if (h1ExtCount >= 4 && h2ExtCount >= 4 && wristDist < 0.28) {
+      return {
+        sign: "Clean / Wash",
+        confidence: 0.94,
+        feedback: "✓ Two open palms rubbing flat together. Clean / Wash sign recognized!",
+        handsCount: hands.length,
+      };
+    }
+
+    // WORLD / EARTH: Both hands forming a global sphere
+    if (wristDist > 0.35 && indexTipDist < 0.28) {
+      return {
+        sign: "World / Earth",
+        confidence: 0.92,
+        feedback: "✓ Sphere gesture formed by both hands. World / Earth sign recognized!",
+        handsCount: hands.length,
+      };
+    }
 
     // WORK / JOB: Two closed fists tapping together at wrists
     if (h1ExtCount <= 1 && h2ExtCount <= 1 && wristDist < 0.30) {
@@ -227,7 +282,67 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   const indexTipY = pts[8].y;
   const thumbIndexTipDist = getDistance(pts[4], pts[8]);
 
-  // 1. SEARCH / LOOK: V-sign (Index & Middle) raised near eyes (indexTipY < 0.30)
+  // 1. THINK / IDEA: Index finger tapping forehead (indexTipY < 0.22)
+  if (indexExt && !middleExt && !ringExt && !pinkyExt && indexTipY < 0.22) {
+    return {
+      sign: "Think / Idea",
+      confidence: 0.94,
+      feedback: "✓ Index finger tapping forehead area. Think / Idea sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 2. HEAR / LISTEN: Index finger pointing near ear
+  if (indexExt && !middleExt && !ringExt && !pinkyExt && indexTipY < 0.30 && pts[8].x > 0.70) {
+    return {
+      sign: "Hear / Listen",
+      confidence: 0.92,
+      feedback: "✓ Index finger pointing at ear location. Hear / Listen sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 3. TEA / COFFEE: C-pinch gesture near mouth area
+  if (thumbIndexTipDist < 0.10 && indexTipY < 0.35 && !ringExt && !pinkyExt) {
+    return {
+      sign: "Tea / Coffee",
+      confidence: 0.92,
+      feedback: "✓ Cup pinch gesture near mouth. Tea / Coffee sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 4. MILK: Squeezing fist motion near chest level
+  if (extendedCount <= 1 && wristY > 0.45 && wristY < 0.70) {
+    return {
+      sign: "Milk",
+      confidence: 0.90,
+      feedback: "✓ Squeezing fist gesture near chest. Milk sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 5. WIN / SUCCESS: Raised fist victory pose high in frame
+  if (extendedCount <= 1 && wristY < 0.35) {
+    return {
+      sign: "Win / Success",
+      confidence: 0.93,
+      feedback: "✓ Raised fist victory posture. Win / Success sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 6. PEACE: V-sign held steady near heart level
+  if (indexExt && middleExt && !ringExt && !pinkyExt && wristY >= 0.45) {
+    return {
+      sign: "Peace",
+      confidence: 0.92,
+      feedback: "✓ V-sign held steady near heart level. Peace sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // 7. SEARCH / LOOK: V-sign (Index & Middle) raised near eyes (indexTipY < 0.30)
   if (indexExt && middleExt && indexTipY < 0.30 && !ringExt && !pinkyExt) {
     return {
       sign: "Search / Look",
