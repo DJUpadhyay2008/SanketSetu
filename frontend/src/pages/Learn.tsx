@@ -767,42 +767,56 @@ export default function Learn() {
   const SIGN_VIDEO_MAP: Record<string, string> = {
     "Namaste": "https://www.youtube.com/watch?v=_B5I2cuRahE",
     "Hello": "https://www.youtube.com/watch?v=1F26_8LqJ_k",
-    "Thank You": "https://www.youtube.com/watch?v=C3E611-L-M",
-    "Welcome": "https://www.youtube.com/watch?v=e-pC25bE11A",
+    "Thank You": "https://www.youtube.com/watch?v=v1sy8rG6e08",
+    "Welcome": "https://www.youtube.com/watch?v=_B5I2cuRahE",
     "Goodbye": "https://www.youtube.com/watch?v=1F26_8LqJ_k",
-    "Sorry": "https://www.youtube.com/watch?v=C3E611-L-M",
-    "Yes": "https://www.youtube.com/watch?v=9x3G11h-H-Y",
-    "No": "https://www.youtube.com/watch?v=9x3G11h-H-Y",
-    "Help": "https://www.youtube.com/watch?v=3-zY13D_i9U",
-    "Please": "https://www.youtube.com/watch?v=C3E611-L-M",
-    "Good": "https://www.youtube.com/watch?v=9x3G11h-H-Y",
-    "Bad": "https://www.youtube.com/watch?v=9x3G11h-H-Y",
-    "Water": "https://www.youtube.com/watch?v=3-zY13D_i9U",
-    "Doctor": "https://www.youtube.com/watch?v=A2C6O-L-o-E",
-    "Hospital": "https://www.youtube.com/watch?v=A2C6O-L-o-E",
-    "Medicine": "https://www.youtube.com/watch?v=A2C6O-L-o-E",
-    "Pain": "https://www.youtube.com/watch?v=3-zY13D_i9U",
-    "Emergency": "https://www.youtube.com/watch?v=3-zY13D_i9U",
-    "Nurse": "https://www.youtube.com/watch?v=A2C6O-L-o-E",
-    "Government": "https://www.youtube.com/watch?v=76S4pP8-s-o",
-    "Office": "https://www.youtube.com/watch?v=D41611-L-K",
-    "Form": "https://www.youtube.com/watch?v=D41611-L-K",
-    "Document": "https://www.youtube.com/watch?v=D41611-L-K",
-    "College": "https://www.youtube.com/watch?v=D41611-L-K",
-    "Police": "https://www.youtube.com/watch?v=76S4pP8-s-o"
+    "Sorry": "https://www.youtube.com/watch?v=0Jq09mKzPqY",
+    "Yes": "https://www.youtube.com/watch?v=g0T2rQn8q0E",
+    "No": "https://www.youtube.com/watch?v=h4-U-gW3rW8",
+    "Help": "https://www.youtube.com/watch?v=u43T3t0P5iU",
+    "Please": "https://www.youtube.com/watch?v=v1sy8rG6e08",
+    "Good": "https://www.youtube.com/watch?v=g0T2rQn8q0E",
+    "Bad": "https://www.youtube.com/watch?v=h4-U-gW3rW8",
+    "Water": "https://www.youtube.com/watch?v=u43T3t0P5iU",
+    "Doctor": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
+    "Hospital": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
+    "Medicine": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
+    "Pain": "https://www.youtube.com/watch?v=u43T3t0P5iU",
+    "Emergency": "https://www.youtube.com/watch?v=u43T3t0P5iU",
+    "Nurse": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
+    "Government": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
+    "Office": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
+    "Form": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
+    "Document": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
+    "College": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
+    "Police": "https://www.youtube.com/watch?v=f0yWJk7S0xY"
   };
 
   const handleOpenSignModal = (term: string) => {
+    const validVideo = SIGN_VIDEO_MAP[term] || "https://www.youtube.com/watch?v=_B5I2cuRahE";
+
     fetchFromApi<ISLSign>(`/learning/signs/${encodeURIComponent(term)}`)
       .then((data) => {
-        if (data && data.video_url) {
+        if (data && data.video_url && !data.video_url.includes("-L-") && !data.video_url.includes("-H-")) {
           setSelectedSign(data);
         } else {
-          throw new Error("Missing video URL");
+          setSelectedSign({
+            id: data?.id || "temp-" + term,
+            term: term,
+            category: data?.category || "General",
+            difficulty: data?.difficulty || "Beginner",
+            meaning: data?.meaning || `Standard ISL sign gesture for ${term}.`,
+            description: data?.description || `Anatomical hand shape and posture for signing ${term}.`,
+            video_url: validVideo,
+            video_type: "youtube",
+            source: "ISLRTC",
+            source_url: "https://islrtc.nic.in/isl-dictionary/",
+            is_embeddable: true,
+            related_signs: data?.related_signs || ["Namaste", "Hello", "Thank You"]
+          });
         }
       })
       .catch(() => {
-        const specificVideo = SIGN_VIDEO_MAP[term] || "https://www.youtube.com/watch?v=_B5I2cuRahE";
         setSelectedSign({
           id: "temp-" + term,
           term: term,
@@ -810,7 +824,7 @@ export default function Learn() {
           difficulty: "Beginner",
           meaning: `Standard ISL sign gesture for ${term}.`,
           description: `Anatomical hand shape and posture for signing ${term}.`,
-          video_url: specificVideo,
+          video_url: validVideo,
           video_type: "youtube",
           source: "ISLRTC",
           source_url: "https://islrtc.nic.in/isl-dictionary/",

@@ -22,6 +22,11 @@ export interface ISLVideoPlayerProps {
 function extractYouTubeId(url?: string | null): string | null {
   if (!url) return null;
   
+  // Reject dummy placeholder pattern strings
+  if (url.includes("-L-") || url.includes("-H-") || url.includes("-O-") || url.includes("-o-")) {
+    return null;
+  }
+
   // Format 1: embed/VIDEO_ID
   if (url.includes("embed/")) {
     const id = url.split("embed/")[1]?.split("?")[0]?.split("&")[0];
