@@ -13,6 +13,7 @@ from app.leaderboard.routers import router as leaderboard_router
 from app.notifications.routers import router as notifications_router
 from app.ai.routers import router as ai_router
 from app.isl_live.routers import router as isl_live_router
+from app.policy.routers import router as policy_router
 
 api_router = APIRouter()
 
@@ -29,3 +30,5 @@ api_router.include_router(leaderboard_router)
 api_router.include_router(notifications_router)
 api_router.include_router(ai_router)
 api_router.include_router(isl_live_router)
+api_router.include_router(policy_router)
+

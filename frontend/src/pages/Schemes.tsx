@@ -284,7 +284,17 @@ export default function Schemes() {
 
   // Chatbot State
   const [question, setQuestion] = useState("");
-  const [chatHistory, setChatHistory] = useState<{ q: string; a: string; sources?: string[]; urls?: string[] }[]>([]);
+  const [chatHistory, setChatHistory] = useState<{
+    q: string;
+    a: string;
+    eligibility?: string[];
+    benefits?: string[];
+    documents?: string[];
+    application_steps?: string[];
+    sources?: string[];
+    urls?: string[];
+    verification_status?: string;
+  }[]>([]);
   const [asking, setAsking] = useState(false);
 
   // Fetch initial schemes list
@@ -310,25 +320,62 @@ export default function Schemes() {
     setAsking(true);
     if (!customQ) setQuestion("");
 
+    // Build chat history for multi-turn conversation context
+    const historyPayload = chatHistory.flatMap((chat) => [
+      { role: "user", content: chat.q },
+      { role: "assistant", content: chat.a }
+    ]);
+
     try {
-      const res = await fetchFromApi<{ answer: string; sources: string[]; urls?: string[] }>("/schemes/ask", {
+      interface PolicySource {
+        title: string;
+        url: string;
+      }
+      interface PolicyChatResponse {
+        answer: string;
+        eligibility?: string[];
+        benefits?: string[];
+        documents?: string[];
+        application_steps?: string[];
+        sources?: PolicySource[];
+        verification_status?: string;
+      }
+
+      const res = await fetchFromApi<PolicyChatResponse>("/policy/chat", {
         method: "POST",
-        body: JSON.stringify({ question: queryToSend }),
+        body: JSON.stringify({
+          message: queryToSend,
+          history: historyPayload
+        }),
       });
-      setChatHistory((prev) => [...prev, { q: queryToSend, a: res.answer, sources: res.sources, urls: res.urls }]);
+
+      const sourceTitles = res.sources?.map((s) => s.title) || [];
+      const sourceUrls = Array.from(new Set(res.sources?.map((s) => s.url).filter(Boolean))) || [];
+
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          q: queryToSend,
+          a: res.answer,
+          eligibility: res.eligibility,
+          benefits: res.benefits,
+          documents: res.documents,
+          application_steps: res.application_steps,
+          sources: sourceTitles,
+          urls: sourceUrls,
+          verification_status: res.verification_status
+        }
+      ]);
     } catch {
-      // Fallback
-      setTimeout(() => {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            q: queryToSend,
-            a: "I couldn't verify this from our current government sources.",
-            sources: [],
-            urls: []
-          },
-        ]);
-      }, 800);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          q: queryToSend,
+          a: "I couldn't verify this from our current government sources.",
+          sources: [],
+          urls: []
+        },
+      ]);
     } finally {
       setAsking(false);
     }
@@ -871,12 +918,45 @@ export default function Schemes() {
                   <div className="ml-auto max-w-[85%] rounded-xl bg-teal-600 text-white p-3 text-right font-bold shadow-xs">
                     {chat.q}
                   </div>
-                  <div className="max-w-[85%] rounded-xl bg-slate-50 dark:bg-slate-900/80 p-3 border border-slate-200/50 dark:border-slate-808 text-slate-700 dark:text-slate-300 space-y-2 font-semibold leading-relaxed shadow-2xs">
+                  <div className="max-w-[85%] rounded-xl bg-slate-50 dark:bg-slate-900/80 p-3 border border-slate-200/50 dark:border-slate-800 text-slate-700 dark:text-slate-300 space-y-2 font-semibold leading-relaxed shadow-2xs">
                     <p className="whitespace-pre-wrap">{chat.a}</p>
+
+                    {chat.eligibility && chat.eligibility.length > 0 && (
+                      <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/80 space-y-1">
+                        <span className="text-[9px] text-teal-600 dark:text-teal-400 font-extrabold uppercase tracking-widest block">Eligibility Criteria:</span>
+                        <ul className="list-disc list-inside text-[10px] space-y-0.5 text-slate-600 dark:text-slate-300">
+                          {chat.eligibility.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {chat.benefits && chat.benefits.length > 0 && (
+                      <div className="pt-1 space-y-1">
+                        <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest block">Key Benefits:</span>
+                        <ul className="list-disc list-inside text-[10px] space-y-0.5 text-slate-600 dark:text-slate-300">
+                          {chat.benefits.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {chat.documents && chat.documents.length > 0 && (
+                      <div className="pt-1 space-y-1">
+                        <span className="text-[9px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-widest block">Required Documents:</span>
+                        <ul className="list-disc list-inside text-[10px] space-y-0.5 text-slate-600 dark:text-slate-300">
+                          {chat.documents.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     
                     {chat.sources && chat.sources.length > 0 && (
                       <div className="border-t border-slate-200/50 dark:border-slate-800/80 pt-2 mt-2 space-y-1.5">
-                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest block">Verified Sources:</span>
+                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest block">✓ Verified Government Source:</span>
                         <div className="flex flex-wrap gap-2">
                           {chat.sources.map((src, i) => (
                             <span key={i} className="bg-slate-200/50 dark:bg-slate-800 text-slate-500 dark:text-slate-450 px-2 py-0.5 rounded text-[10px] font-bold">
@@ -894,7 +974,7 @@ export default function Schemes() {
                                 rel="noopener noreferrer" 
                                 className="text-[9px] font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1 hover:underline"
                               >
-                                Official Portal Link <ExternalLink className="h-2.5 w-2.5" />
+                                [ View Official Source → ] <ExternalLink className="h-2.5 w-2.5" />
                               </a>
                             ))}
                           </div>

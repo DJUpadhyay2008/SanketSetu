@@ -27,6 +27,8 @@ class Settings(BaseSettings):
 
     # AI configuration (centralized)
     GEMINI_API_KEY: str = Field(default="")
+    OPENROUTER_API_KEY: str = Field(default="")
+    OPENROUTER_MODEL: str = Field(default="z-ai/glm-5.2:free")
 
     # CORS Origins (Allowed for Dev)
     BACKEND_CORS_ORIGINS: List[str] = [
