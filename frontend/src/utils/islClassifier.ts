@@ -113,13 +113,13 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
     const indexTipDist = getDistance(h1[8], h2[8]);
     const middleMcpDist = getDistance(h1[9], h2[9]);
 
-    // HELP: One hand flat/open, one hand closed fist or thumb up
+    // HELP: One hand flat/open, one hand closed fist or thumb up resting together
     const h1ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h1, t, [2, 6, 10, 14, 18][i])).length;
     const h2ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h2, t, [2, 6, 10, 14, 18][i])).length;
 
     const oneFlatOneFist = (h1ExtCount >= 3 && h2ExtCount <= 2) || (h2ExtCount >= 3 && h1ExtCount <= 2);
 
-    if (oneFlatOneFist && wristDist < 0.55) {
+    if (oneFlatOneFist && wristDist < 0.40) {
       return {
         sign: "Help",
         confidence: 0.91,
@@ -128,8 +128,8 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
       };
     }
 
-    // NAMASTE: Joined palms or close proximity of index tips/wrists at chest level
-    if (wristDist < 0.48 || indexTipDist < 0.42 || middleMcpDist < 0.40) {
+    // NAMASTE: Both palms pressed together flat at chest level
+    if (wristDist < 0.36 && (indexTipDist < 0.32 || middleMcpDist < 0.32)) {
       return {
         sign: "Namaste",
         confidence: 0.94,
@@ -138,12 +138,7 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
       };
     }
 
-    return {
-      sign: "Namaste",
-      confidence: 0.82,
-      feedback: "Two hands in frame. Bring palms together for Namaste.",
-      handsCount: hands.length,
-    };
+    // If 2 hands detected but NOT performing Namaste/Help, evaluate primary active hand!
   }
 
   // ----------------------------------------------------
