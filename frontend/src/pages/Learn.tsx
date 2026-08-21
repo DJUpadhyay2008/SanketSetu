@@ -765,39 +765,39 @@ export default function Learn() {
   const [selectedSign, setSelectedSign] = useState<ISLSign | null>(null);
 
   const SIGN_VIDEO_MAP: Record<string, { url: string; type: "direct" | "youtube" }> = {
-    "Namaste": { url: "/videos/namaste.mp4", type: "direct" },
-    "Hello": { url: "/videos/namaste.mp4", type: "direct" },
-    "Thank You": { url: "/videos/namaste.mp4", type: "direct" },
-    "Welcome": { url: "/videos/namaste.mp4", type: "direct" },
-    "Goodbye": { url: "/videos/namaste.mp4", type: "direct" },
-    "Sorry": { url: "/videos/help.mp4", type: "direct" },
-    "Yes": { url: "/videos/doctor.mp4", type: "direct" },
-    "No": { url: "/videos/doctor.mp4", type: "direct" },
-    "Help": { url: "/videos/help.mp4", type: "direct" },
-    "Please": { url: "/videos/namaste.mp4", type: "direct" },
-    "Good": { url: "/videos/doctor.mp4", type: "direct" },
-    "Bad": { url: "/videos/doctor.mp4", type: "direct" },
-    "Water": { url: "/videos/help.mp4", type: "direct" },
-    "Doctor": { url: "/videos/doctor.mp4", type: "direct" },
-    "Hospital": { url: "/videos/doctor.mp4", type: "direct" },
-    "Medicine": { url: "/videos/doctor.mp4", type: "direct" },
-    "Pain": { url: "/videos/help.mp4", type: "direct" },
-    "Emergency": { url: "/videos/help.mp4", type: "direct" },
-    "Nurse": { url: "/videos/doctor.mp4", type: "direct" },
-    "Government": { url: "/videos/help.mp4", type: "direct" },
-    "Office": { url: "/videos/help.mp4", type: "direct" },
-    "Form": { url: "/videos/help.mp4", type: "direct" },
-    "Document": { url: "/videos/help.mp4", type: "direct" },
-    "College": { url: "/videos/help.mp4", type: "direct" },
-    "Police": { url: "/videos/help.mp4", type: "direct" }
+    "Namaste": { url: "https://www.youtube.com/watch?v=_B5I2cuRahE", type: "youtube" },
+    "Hello": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Thank You": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
+    "Welcome": { url: "https://www.youtube.com/watch?v=_B5I2cuRahE", type: "youtube" },
+    "Goodbye": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Sorry": { url: "https://www.youtube.com/watch?v=0Jq09mKzPqY", type: "youtube" },
+    "Yes": { url: "https://www.youtube.com/watch?v=g0T2rQn8q0E", type: "youtube" },
+    "No": { url: "https://www.youtube.com/watch?v=h4-U-gW3rW8", type: "youtube" },
+    "Help": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Please": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
+    "Good": { url: "https://www.youtube.com/watch?v=g0T2rQn8q0E", type: "youtube" },
+    "Bad": { url: "https://www.youtube.com/watch?v=h4-U-gW3rW8", type: "youtube" },
+    "Water": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Doctor": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Hospital": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Medicine": { url: "https://www.youtube.com/watch?v=v1sy8rG6e08", type: "youtube" },
+    "Pain": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Emergency": { url: "https://www.youtube.com/watch?v=u43T3t0P5iU", type: "youtube" },
+    "Nurse": { url: "https://www.youtube.com/watch?v=_B5I2cuRahE", type: "youtube" },
+    "Government": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Office": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Form": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Document": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "College": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" },
+    "Police": { url: "https://www.youtube.com/watch?v=1F26_8LqJ_k", type: "youtube" }
   };
 
   const handleOpenSignModal = (term: string) => {
-    const videoConfig = SIGN_VIDEO_MAP[term] || { url: "/videos/namaste.mp4", type: "direct" as const };
+    const videoConfig = SIGN_VIDEO_MAP[term] || { url: "https://www.youtube.com/watch?v=_B5I2cuRahE", type: "youtube" as const };
 
     fetchFromApi<ISLSign>(`/learning/signs/${encodeURIComponent(term)}`)
       .then((data) => {
-        if (data && data.video_url && (data.video_url.endsWith(".mp4") || data.video_url.startsWith("/videos/"))) {
+        if (data && data.video_url && !data.video_url.includes("-L-") && !data.video_url.includes("-H-")) {
           setSelectedSign(data);
         } else {
           setSelectedSign({

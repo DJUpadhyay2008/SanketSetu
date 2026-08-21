@@ -243,7 +243,7 @@ export const ISLVideoPlayer: React.FC<ISLVideoPlayerProps> = ({
               </div>
             )}
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0`}
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=1&modestbranding=1&rel=0`}
               title={`ISL Sign demonstration for ${term}`}
               className="w-full h-full border-0 rounded-2xl"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
