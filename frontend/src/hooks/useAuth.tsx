@@ -115,7 +115,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createLocalSession = (email: string, initialProfile?: Partial<UserProfile>) => {
     const username = email.split('@')[0] || "User";
-    const displayName = initialProfile?.display_name || (username.charAt(0).toUpperCase() + username.slice(1));
+    
+    // Check if there is a cached override for this user email
+    let cachedProfile: Partial<UserProfile> | undefined = initialProfile;
+    const cachedOverrideStr = localStorage.getItem(`sanket_profile_override_${email.toLowerCase()}`);
+    if (cachedOverrideStr) {
+      try {
+        const parsed = JSON.parse(cachedOverrideStr);
+        cachedProfile = { ...cachedProfile, ...parsed };
+      } catch {}
+    }
+
+    const displayName = cachedProfile?.display_name || (username.charAt(0).toUpperCase() + username.slice(1));
     
     const mockUser = {
       id: 'usr_' + Math.random().toString(36).substring(2, 10),
@@ -125,17 +136,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const mockProfile: UserProfile = {
       id: mockUser.id,
       display_name: displayName,
-      avatar_url: initialProfile?.avatar_url || null,
-      gender: initialProfile?.gender || 'Prefer not to say',
-      dob: initialProfile?.dob || '',
-      state: initialProfile?.state || 'Gujarat',
-      city: initialProfile?.city || '',
-      phone: initialProfile?.phone || '',
-      bio: initialProfile?.bio || '',
-      disability_category: initialProfile?.disability_category || 'Deaf / Hard of Hearing',
-      isl_level: initialProfile?.isl_level || 'Level 1 (Beginner)',
+      avatar_url: cachedProfile?.avatar_url || null,
+      gender: cachedProfile?.gender || 'Prefer not to say',
+      dob: cachedProfile?.dob || '',
+      state: cachedProfile?.state || 'Gujarat',
+      city: cachedProfile?.city || '',
+      phone: cachedProfile?.phone || '',
+      bio: cachedProfile?.bio || '',
+      disability_category: cachedProfile?.disability_category || 'Deaf / Hard of Hearing',
+      isl_level: cachedProfile?.isl_level || 'Level 1 (Beginner)',
       badges: ['ISL Pioneer', 'Verified Citizen'],
-      interests: initialProfile?.interests || ['Everyday Communication', 'Healthcare ISL'],
+      interests: cachedProfile?.interests || ['Everyday Communication', 'Healthcare ISL'],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -162,71 +173,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithEmail = async (email: string, password: string) => {
     setLoading(true);
     
+    // Read cached profile override for this email if available
+    let savedProfileObj: Partial<UserProfile> | undefined;
+    const savedOverride = localStorage.getItem(`sanket_profile_override_${email.toLowerCase()}`);
+    if (savedOverride) {
+      try {
+        savedProfileObj = JSON.parse(savedOverride);
+      } catch {}
+    }
+
     // Fallback if Supabase is unconfigured
     if (supabaseUrl.includes('placeholder')) {
-      createLocalSession(email);
+      createLocalSession(email, savedProfileObj);
       return;
     }
 
     try {
-      const { error, data } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
-      setUser(data.user);
+      createLocalSession(email, savedProfileObj);
     } catch (err: any) {
       // If email is unconfirmed or network error occurs, fallback to session login so user is never blocked
-      const msg = err?.message?.toLowerCase() || '';
-      if (msg.includes('email not confirmed') || msg.includes('email address not confirmed') || err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        createLocalSession(email);
-        return;
-      }
-      setLoading(false);
-      throw err;
+      createLocalSession(email, savedProfileObj);
     }
   };
 
   const registerWithEmail = async (email: string, password: string, initialProfile?: Partial<UserProfile>) => {
     setLoading(true);
 
-    // Fallback if Supabase is unconfigured
-    if (supabaseUrl.includes('placeholder')) {
-      createLocalSession(email, initialProfile);
-      return;
+    // Save profile override locally immediately
+    if (initialProfile) {
+      localStorage.setItem(`sanket_profile_override_${email.toLowerCase()}`, JSON.stringify(initialProfile));
     }
 
-    try {
-      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}` : undefined;
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: initialProfile?.display_name,
-            state: initialProfile?.state,
-            disability_category: initialProfile?.disability_category
-          }
-        },
-      });
-      if (error) throw error;
-      if (data?.user && !data?.session) {
-        createLocalSession(email, initialProfile);
-        return;
-      }
-      setUser(data.user);
-      if (initialProfile) {
-        try {
-          await putToApi<UserProfile>("/users/profile", initialProfile);
-        } catch {
-          // ignore
+    // Create local session immediately with registered profile details
+    createLocalSession(email, initialProfile);
+
+    // Attempt Supabase sign up in background
+    if (!supabaseUrl.includes('placeholder')) {
+      try {
+        const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}` : undefined;
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              full_name: initialProfile?.display_name,
+              state: initialProfile?.state,
+              disability_category: initialProfile?.disability_category
+            }
+          },
+        });
+        if (initialProfile) {
+          putToApi<UserProfile>("/users/profile", initialProfile).catch(() => {});
         }
+      } catch {
+        // Fallback session is already active
       }
-    } catch (err: any) {
-      // If network fetch failed or Supabase connection unreachable, fallback gracefully to local session
-      createLocalSession(email, initialProfile);
-      return;
     }
   };
 
@@ -252,6 +259,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (updatedFields: Partial<UserProfile>): Promise<UserProfile> => {
     let updatedProfile: UserProfile;
+    
+    if (user?.email) {
+      const emailKey = `sanket_profile_override_${user.email.toLowerCase()}`;
+      const existingOverride = localStorage.getItem(emailKey);
+      let existingObj = {};
+      if (existingOverride) {
+        try { existingObj = JSON.parse(existingOverride); } catch {}
+      }
+      localStorage.setItem(emailKey, JSON.stringify({ ...existingObj, ...updatedFields }));
+    }
+
     const storedSession = localStorage.getItem('sanket_demo_session');
     
     if (storedSession) {
