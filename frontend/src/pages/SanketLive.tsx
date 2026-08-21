@@ -203,8 +203,20 @@ export default function SanketLive() {
               handedness: (results.handedness?.[idx]?.[0]?.categoryName as "Left" | "Right") || "Right",
             }));
 
-            // Draw Hand Skeleton on Canvas
+            // Run ISL Feature Extraction & Classification
+            const res = classifyISLGesture(handDataList);
+            setPrediction(res);
+
+            // Apply Stability Filter
+            const stable = filterRef.current.add(res.sign);
+            if (stable) {
+              setStabilizedSign(stable);
+            }
+
+            // Draw Hand Skeleton & Dynamic Sign Text on Canvas
             if (ctx) {
+              const displayLabel = stable || res.sign;
+
               handDataList.forEach((hand) => {
                 const landmarks = hand.landmarks;
 
@@ -228,17 +240,33 @@ export default function SanketLive() {
                   ctx.strokeStyle = "#FFFFFF";
                   ctx.stroke();
                 });
+
+                // Render dynamic text tag above wrist (landmark 0)
+                if (displayLabel && displayLabel !== "None" && displayLabel !== "Searching...") {
+                  const wristX = landmarks[0].x * canvas.width;
+                  const wristY = landmarks[0].y * canvas.height;
+
+                  ctx.save();
+                  // Reset mirror transform for text so it reads left-to-right legibly
+                  ctx.font = "bold 16px sans-serif";
+                  const textWidth = ctx.measureText(displayLabel).width;
+                  
+                  // Background tag badge
+                  ctx.fillStyle = stable ? "rgba(15, 118, 110, 0.9)" : "rgba(15, 23, 42, 0.9)";
+                  ctx.strokeStyle = stable ? "#2dd4bf" : "#f97316";
+                  ctx.lineWidth = 1.5;
+                  ctx.beginPath();
+                  ctx.roundRect(wristX - textWidth / 2 - 8, wristY - 42, textWidth + 16, 26, 6);
+                  ctx.fill();
+                  ctx.stroke();
+
+                  // Text label
+                  ctx.fillStyle = "#FFFFFF";
+                  ctx.textAlign = "center";
+                  ctx.fillText(displayLabel, wristX, wristY - 24);
+                  ctx.restore();
+                }
               });
-            }
-
-            // Run ISL Feature Extraction & Classification
-            const res = classifyISLGesture(handDataList);
-            setPrediction(res);
-
-            // Apply Stability Filter
-            const stable = filterRef.current.add(res.sign);
-            if (stable) {
-              setStabilizedSign(stable);
             }
           } else {
             setHandsDetected(0);
@@ -452,6 +480,53 @@ export default function SanketLive() {
                     <span>Model: MediaPipe WASM</span>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Bottom HUD Banner: Dynamic Recognized Sign Overlay directly on top of Video */}
+            {cameraActive && (
+              <div className="absolute bottom-4 left-4 right-4 z-20 pointer-events-none flex flex-col items-center">
+                {prediction && (prediction.sign !== "None" && prediction.sign !== "Searching...") ? (
+                  <div className={`w-full max-w-lg p-3.5 rounded-2xl backdrop-blur-xl border shadow-2xl flex items-center justify-between gap-3 transition-all transform animate-in fade-in slide-in-from-bottom-2 ${
+                    stabilizedSign
+                      ? "bg-teal-950/90 border-teal-400/50 shadow-teal-950/50 ring-2 ring-teal-500/30"
+                      : "bg-slate-950/90 border-orange-500/40 shadow-orange-950/30"
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-xl border ${
+                        stabilizedSign ? "bg-teal-500/20 border-teal-400/40 text-teal-300" : "bg-orange-500/20 border-orange-400/40 text-orange-300"
+                      }`}>
+                        <Sparkles className="h-6 w-6 animate-pulse" />
+                      </div>
+                      <div className="space-y-0.5 text-left">
+                        <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                          {stabilizedSign ? "✓ Confirmed Gesture" : "Detecting Gesture..."}
+                        </div>
+                        <div className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                          <span>{stabilizedSign ? stabilizedSign : prediction.sign}</span>
+                          {stabilizedSign && mode === "learning" && stabilizedSign.toLowerCase() === currentSign.term.toLowerCase() && (
+                            <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              MATCHED!
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right space-y-1">
+                      <div className="inline-flex items-center gap-1 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 text-[11px] font-black text-teal-400">
+                        <span>{Math.round(prediction.confidence * 100)}%</span>
+                      </div>
+                      <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">
+                        Confidence
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-4 py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800 text-xs font-bold text-slate-400 shadow-lg">
+                    🖐️ Place hand clearly in camera view to recognize sign
+                  </div>
+                )}
               </div>
             )}
           </div>
