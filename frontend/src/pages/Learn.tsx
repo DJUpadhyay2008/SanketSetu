@@ -764,40 +764,40 @@ export default function Learn() {
   const [islSigns, setIslSigns] = useState<ISLSign[]>([]);
   const [selectedSign, setSelectedSign] = useState<ISLSign | null>(null);
 
-  const SIGN_VIDEO_MAP: Record<string, string> = {
-    "Namaste": "https://www.youtube.com/watch?v=_B5I2cuRahE",
-    "Hello": "https://www.youtube.com/watch?v=1F26_8LqJ_k",
-    "Thank You": "https://www.youtube.com/watch?v=v1sy8rG6e08",
-    "Welcome": "https://www.youtube.com/watch?v=_B5I2cuRahE",
-    "Goodbye": "https://www.youtube.com/watch?v=1F26_8LqJ_k",
-    "Sorry": "https://www.youtube.com/watch?v=0Jq09mKzPqY",
-    "Yes": "https://www.youtube.com/watch?v=g0T2rQn8q0E",
-    "No": "https://www.youtube.com/watch?v=h4-U-gW3rW8",
-    "Help": "https://www.youtube.com/watch?v=u43T3t0P5iU",
-    "Please": "https://www.youtube.com/watch?v=v1sy8rG6e08",
-    "Good": "https://www.youtube.com/watch?v=g0T2rQn8q0E",
-    "Bad": "https://www.youtube.com/watch?v=h4-U-gW3rW8",
-    "Water": "https://www.youtube.com/watch?v=u43T3t0P5iU",
-    "Doctor": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
-    "Hospital": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
-    "Medicine": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
-    "Pain": "https://www.youtube.com/watch?v=u43T3t0P5iU",
-    "Emergency": "https://www.youtube.com/watch?v=u43T3t0P5iU",
-    "Nurse": "https://www.youtube.com/watch?v=n4Z3qN7a-x0",
-    "Government": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
-    "Office": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
-    "Form": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
-    "Document": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
-    "College": "https://www.youtube.com/watch?v=f0yWJk7S0xY",
-    "Police": "https://www.youtube.com/watch?v=f0yWJk7S0xY"
+  const SIGN_VIDEO_MAP: Record<string, { url: string; type: "direct" | "youtube" }> = {
+    "Namaste": { url: "/videos/namaste.mp4", type: "direct" },
+    "Hello": { url: "/videos/namaste.mp4", type: "direct" },
+    "Thank You": { url: "/videos/namaste.mp4", type: "direct" },
+    "Welcome": { url: "/videos/namaste.mp4", type: "direct" },
+    "Goodbye": { url: "/videos/namaste.mp4", type: "direct" },
+    "Sorry": { url: "/videos/help.mp4", type: "direct" },
+    "Yes": { url: "/videos/doctor.mp4", type: "direct" },
+    "No": { url: "/videos/doctor.mp4", type: "direct" },
+    "Help": { url: "/videos/help.mp4", type: "direct" },
+    "Please": { url: "/videos/namaste.mp4", type: "direct" },
+    "Good": { url: "/videos/doctor.mp4", type: "direct" },
+    "Bad": { url: "/videos/doctor.mp4", type: "direct" },
+    "Water": { url: "/videos/help.mp4", type: "direct" },
+    "Doctor": { url: "/videos/doctor.mp4", type: "direct" },
+    "Hospital": { url: "/videos/doctor.mp4", type: "direct" },
+    "Medicine": { url: "/videos/doctor.mp4", type: "direct" },
+    "Pain": { url: "/videos/help.mp4", type: "direct" },
+    "Emergency": { url: "/videos/help.mp4", type: "direct" },
+    "Nurse": { url: "/videos/doctor.mp4", type: "direct" },
+    "Government": { url: "/videos/help.mp4", type: "direct" },
+    "Office": { url: "/videos/help.mp4", type: "direct" },
+    "Form": { url: "/videos/help.mp4", type: "direct" },
+    "Document": { url: "/videos/help.mp4", type: "direct" },
+    "College": { url: "/videos/help.mp4", type: "direct" },
+    "Police": { url: "/videos/help.mp4", type: "direct" }
   };
 
   const handleOpenSignModal = (term: string) => {
-    const validVideo = SIGN_VIDEO_MAP[term] || "https://www.youtube.com/watch?v=_B5I2cuRahE";
+    const videoConfig = SIGN_VIDEO_MAP[term] || { url: "/videos/namaste.mp4", type: "direct" as const };
 
     fetchFromApi<ISLSign>(`/learning/signs/${encodeURIComponent(term)}`)
       .then((data) => {
-        if (data && data.video_url && !data.video_url.includes("-L-") && !data.video_url.includes("-H-")) {
+        if (data && data.video_url && (data.video_url.endsWith(".mp4") || data.video_url.startsWith("/videos/"))) {
           setSelectedSign(data);
         } else {
           setSelectedSign({
@@ -807,8 +807,8 @@ export default function Learn() {
             difficulty: data?.difficulty || "Beginner",
             meaning: data?.meaning || `Standard ISL sign gesture for ${term}.`,
             description: data?.description || `Anatomical hand shape and posture for signing ${term}.`,
-            video_url: validVideo,
-            video_type: "youtube",
+            video_url: videoConfig.url,
+            video_type: videoConfig.type,
             source: "ISLRTC",
             source_url: "https://islrtc.nic.in/isl-dictionary/",
             is_embeddable: true,
@@ -824,8 +824,8 @@ export default function Learn() {
           difficulty: "Beginner",
           meaning: `Standard ISL sign gesture for ${term}.`,
           description: `Anatomical hand shape and posture for signing ${term}.`,
-          video_url: validVideo,
-          video_type: "youtube",
+          video_url: videoConfig.url,
+          video_type: videoConfig.type,
           source: "ISLRTC",
           source_url: "https://islrtc.nic.in/isl-dictionary/",
           is_embeddable: true,
