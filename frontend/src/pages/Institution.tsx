@@ -15,8 +15,15 @@ interface InstitutionItem {
   city: string;
 }
 
+const FALLBACK_INSTITUTIONS: InstitutionItem[] = [
+  { id: "fallback-inst-1", name: "All India Institute of Medical Sciences (AIIMS)", category: "healthcare", readiness_score: 88, tier: "A", city: "New Delhi" },
+  { id: "fallback-inst-2", name: "Noida Public School", category: "education", readiness_score: 45, tier: "C", city: "Noida" },
+  { id: "fallback-inst-3", name: "State Bank of India (CP Branch)", category: "finance", readiness_score: 72, tier: "B", city: "New Delhi" },
+  { id: "fallback-inst-4", name: "District Collectorate Office", category: "government", readiness_score: 30, tier: "D", city: "Indore" }
+];
+
 export default function Institution() {
-  const [institutions, setInstitutions] = useState<InstitutionItem[]>([]);
+  const [institutions, setInstitutions] = useState<InstitutionItem[]>(FALLBACK_INSTITUTIONS);
   const [loading, setLoading] = useState(true);
   
   // Auditing Form State
@@ -31,17 +38,15 @@ export default function Institution() {
   useEffect(() => {
     fetchFromApi<InstitutionItem[]>("/institutions/index")
       .then((data) => {
-        setInstitutions(data);
+        if (Array.isArray(data)) {
+          setInstitutions(data);
+        } else {
+          setInstitutions(FALLBACK_INSTITUTIONS);
+        }
         setLoading(false);
       })
       .catch(() => {
-        // Fallback mock items
-        setInstitutions([
-          { id: "fallback-inst-1", name: "All India Institute of Medical Sciences (AIIMS)", category: "healthcare", readiness_score: 88, tier: "A", city: "New Delhi" },
-          { id: "fallback-inst-2", name: "Noida Public School", category: "education", readiness_score: 45, tier: "C", city: "Noida" },
-          { id: "fallback-inst-3", name: "State Bank of India (CP Branch)", category: "finance", readiness_score: 72, tier: "B", city: "New Delhi" },
-          { id: "fallback-inst-4", name: "District Collectorate Office", category: "government", readiness_score: 30, tier: "D", city: "Indore" }
-        ]);
+        setInstitutions(FALLBACK_INSTITUTIONS);
         setLoading(false);
       });
   }, []);
@@ -61,9 +66,13 @@ export default function Institution() {
         })
       });
       setResult({
-        score: res.calculated_score,
-        tier: res.assigned_tier,
-        recommendations: res.recommendations
+        score: res.calculated_score ?? 50,
+        tier: res.assigned_tier ?? "C",
+        recommendations: Array.isArray(res.recommendations) ? res.recommendations : [
+          "Conduct beginner sign workshops for first-contact customer desks.",
+          "Integrate direct Video Relay Services (VRS) desk connectivity.",
+          "Display high-contrast visual guiding signs in building lobbies."
+        ]
       });
     } catch {
       // Local calculation fallback
@@ -96,6 +105,7 @@ export default function Institution() {
   };
 
   const getTierBadge = (t: string) => {
+    if (!t) return <Badge variant="secondary">Tier N/A</Badge>;
     if (t.startsWith("A")) return <Badge variant="success">{`Tier ${t}`}</Badge>;
     if (t.startsWith("B") || t.startsWith("C")) return <Badge variant="saffron">{`Tier ${t}`}</Badge>;
     return <Badge variant="danger">{`Tier ${t}`}</Badge>;
@@ -135,7 +145,7 @@ export default function Institution() {
           {loading && <LoadingState />}
 
           <div className="grid grid-cols-1 gap-4">
-            {!loading && institutions.map((inst) => (
+            {!loading && (Array.isArray(institutions) ? institutions : FALLBACK_INSTITUTIONS).map((inst) => (
               <Card key={inst.id} className="border border-slate-200 dark:border-slate-800/80">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex gap-3">
@@ -147,7 +157,7 @@ export default function Institution() {
                         {inst.name}
                       </h3>
                       <p className="text-[10px] text-slate-400 font-extrabold uppercase mt-1 tracking-wider">
-                        {inst.category.toUpperCase()} • {inst.city}
+                        {inst.category?.toUpperCase()} • {inst.city}
                       </p>
                     </div>
                   </div>
@@ -155,8 +165,8 @@ export default function Institution() {
                   <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-100 dark:border-slate-850 pt-3 sm:pt-0">
                     <div className="text-right space-y-1">
                       <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Readiness Score</p>
-                      <ProgressBar value={inst.readiness_score} size="sm" variant="teal" />
-                      <p className="text-xs font-black text-slate-700 dark:text-slate-350">{inst.readiness_score}/100</p>
+                      <ProgressBar value={inst.readiness_score || 0} size="sm" variant="teal" />
+                      <p className="text-xs font-black text-slate-700 dark:text-slate-350">{inst.readiness_score || 0}/100</p>
                     </div>
                     <div className="shrink-0 pl-2">
                       {getTierBadge(inst.tier)}
@@ -264,7 +274,7 @@ export default function Institution() {
                       Compliance Actions:
                     </p>
                     <ul className="list-disc pl-4 text-slate-550 dark:text-slate-400 space-y-1.5">
-                      {result.recommendations.map((rec, i) => (
+                      {(result.recommendations || []).map((rec, i) => (
                         <li key={i} className="leading-relaxed">{rec}</li>
                       ))}
                     </ul>

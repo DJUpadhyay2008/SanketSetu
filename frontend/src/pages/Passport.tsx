@@ -42,9 +42,40 @@ interface PassportDetail {
   qr_code_data: string;
 }
 
+const FALLBACK_PASSPORT: PassportDetail = {
+  user_id: "d3b07384-d113-495f-9e77-94d3a0429f55",
+  display_name: "Sanket Citizen",
+  avatar_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150",
+  gender: "Male",
+  dob: "1998-05-14",
+  state: "Gujarat",
+  city: "Ahmedabad",
+  phone: "+91 98765 43210",
+  bio: "Certified ISL Learner dedicated to civic inclusion.",
+  disability_category: "Deaf / Hard of Hearing",
+  current_level: 2,
+  xp_points: 1240,
+  streak: 5,
+  badges: ["Quick Starter", "First Greeting", "Daily Streak", "Community Pilot"],
+  certificates: [
+    {
+      id: "88888888-8888-8888-8888-888888888888",
+      course_name: "Everyday ISL Greetings",
+      issue_date: "2026-08-16",
+      grade: "A+",
+      credential_url: "/verify/88888888-8888-8888-8888-888888888888",
+      issuer: "Sanket Setu Platform",
+      skill: "Basic Greetings"
+    }
+  ],
+  skills: ["Everyday Greetings", "Emergency Reporting", "Basic Hospital Support"],
+  interests: ["Healthcare ISL", "Civic Services", "Daily Vocabulary"],
+  qr_code_data: "sanket-passport-v1-d3b07384-d113-495f-9e77-94d3a0429f55"
+};
+
 export default function Passport() {
   const { profile } = useAuth();
-  const [passport, setPassport] = useState<PassportDetail | null>(null);
+  const [passport, setPassport] = useState<PassportDetail>(FALLBACK_PASSPORT);
   const [loading, setLoading] = useState(true);
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null);
   const [showPassportQrModal, setShowPassportQrModal] = useState(false);
@@ -52,40 +83,27 @@ export default function Passport() {
   useEffect(() => {
     fetchFromApi<PassportDetail>("/passport")
       .then((data) => {
-        setPassport(data);
+        if (data && typeof data === "object" && Array.isArray(data.certificates)) {
+          setPassport(data);
+        } else {
+          setPassport(FALLBACK_PASSPORT);
+        }
         setLoading(false);
       })
       .catch(() => {
-        // Fallback mock passport
         setPassport({
-          user_id: profile?.id || "d3b07384-d113-495f-9e77-94d3a0429f55",
-          display_name: profile?.display_name || "Sanket Citizen",
-          avatar_url: profile?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150",
-          gender: profile?.gender || "Male",
-          dob: profile?.dob || "1998-05-14",
-          state: profile?.state || "Gujarat",
-          city: profile?.city || "Ahmedabad",
-          phone: profile?.phone || "+91 98765 43210",
-          bio: profile?.bio || "Certified ISL Learner dedicated to civic inclusion.",
-          disability_category: profile?.disability_category || "Deaf / Hard of Hearing",
-          current_level: 2,
-          xp_points: 1240,
-          streak: 5,
-          badges: ["Quick Starter", "First Greeting", "Daily Streak", "Community Pilot"],
-          certificates: [
-            {
-              id: "88888888-8888-8888-8888-888888888888",
-              course_name: "Everyday ISL Greetings",
-              issue_date: "2026-08-16",
-              grade: "A+",
-              credential_url: "/verify/88888888-8888-8888-8888-888888888888",
-              issuer: "Sanket Setu Platform",
-              skill: "Basic Greetings"
-            }
-          ],
-          skills: ["Everyday Greetings", "Emergency Reporting", "Basic Hospital Support"],
-          interests: profile?.interests || ["Healthcare ISL", "Civic Services", "Daily Vocabulary"],
-          qr_code_data: "sanket-passport-v1-d3b07384-d113-495f-9e77-94d3a0429f55"
+          ...FALLBACK_PASSPORT,
+          user_id: profile?.id || FALLBACK_PASSPORT.user_id,
+          display_name: profile?.display_name || FALLBACK_PASSPORT.display_name,
+          avatar_url: profile?.avatar_url || FALLBACK_PASSPORT.avatar_url,
+          gender: profile?.gender || FALLBACK_PASSPORT.gender,
+          dob: profile?.dob || FALLBACK_PASSPORT.dob,
+          state: profile?.state || FALLBACK_PASSPORT.state,
+          city: profile?.city || FALLBACK_PASSPORT.city,
+          phone: profile?.phone || FALLBACK_PASSPORT.phone,
+          bio: profile?.bio || FALLBACK_PASSPORT.bio,
+          disability_category: profile?.disability_category || FALLBACK_PASSPORT.disability_category,
+          interests: profile?.interests || FALLBACK_PASSPORT.interests,
         });
         setLoading(false);
       });
@@ -98,17 +116,17 @@ export default function Passport() {
   if (loading) return <LoadingState />;
 
   // Merge live profile data if available
-  const activeAvatar = profile?.avatar_url || passport?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150";
-  const activeName = profile?.display_name || passport?.display_name || "Sanket Citizen";
-  const activeState = profile?.state || passport?.state || "Gujarat";
-  const activeCity = profile?.city || passport?.city || "Ahmedabad";
-  const activeGender = profile?.gender || passport?.gender;
-  const activeDob = profile?.dob || passport?.dob;
-  const activeCategory = profile?.disability_category || passport?.disability_category || "Deaf / Hard of Hearing";
-  const activeBio = profile?.bio || passport?.bio;
+  const activeAvatar = profile?.avatar_url || passport.avatar_url;
+  const activeName = profile?.display_name || passport.display_name;
+  const activeState = profile?.state || passport.state;
+  const activeCity = profile?.city || passport.city;
+  const activeGender = profile?.gender || passport.gender;
+  const activeDob = profile?.dob || passport.dob;
+  const activeCategory = profile?.disability_category || passport.disability_category;
+  const activeBio = profile?.bio || passport.bio;
 
   // Real Scannable Passport Verification QR URL
-  const certIdForQr = passport?.certificates[0]?.id || "88888888-8888-8888-8888-888888888888";
+  const certIdForQr = passport.certificates?.[0]?.id || "88888888-8888-8888-8888-888888888888";
   const passportVerifyUrl = `${window.location.origin}/verify/${certIdForQr}`;
   const passportQrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(passportVerifyUrl)}`;
 
@@ -159,263 +177,261 @@ export default function Passport() {
         </div>
       </section>
 
-      {passport && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
-          {/* Left Column: Passport Info & Badges */}
-          <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
+        {/* Left Column: Passport Info & Badges */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* Digital Identity Passport Card */}
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/65 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row gap-6 justify-between items-start relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-orange-500 via-slate-800 to-teal-500" />
             
-            {/* Digital Identity Passport Card */}
-            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/65 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row gap-6 justify-between items-start relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-orange-500 via-slate-800 to-teal-500" />
-              
-              <div className="space-y-6 flex-1 pl-2">
-                <div className="flex items-center gap-4">
-                  <img 
-                    src={activeAvatar} 
-                    alt={activeName} 
-                    className="h-16 w-16 rounded-full border-2 border-teal-500 object-cover shadow-md"
-                  />
-                  <div>
-                    <span className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest block">
-                      Digital Accessibility Passport
-                    </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5 tracking-tight">
-                      {activeName}
-                    </h2>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-teal-500" /> {activeCity ? `${activeCity}, ` : ""}{activeState}
-                      </span>
-                      {activeGender && (
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                          {activeGender}
-                        </span>
-                      )}
-                      {activeDob && (
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-teal-500" /> {activeDob}
-                        </span>
-                      )}
-                      {activeCategory && (
-                        <Badge variant="saffron" className="text-[9px]">
-                          {activeCategory}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                      ISL Level
-                    </span>
-                    <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                      Level {passport.current_level}
-                    </span>
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                      Points
-                    </span>
-                    <span className="text-xs font-extrabold text-orange-550 dark:text-orange-400">
-                      {passport.xp_points} XP
-                    </span>
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                      Streak
-                    </span>
-                    <span className="text-xs font-extrabold text-teal-600 dark:text-teal-450 flex items-center gap-1">
-                      <Flame className="h-3.5 w-3.5 fill-current" /> {passport.streak} Days
-                    </span>
-                  </div>
-                </div>
-
-                {activeBio && (
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/50 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 italic">
-                    "{activeBio}"
-                  </div>
-                )}
-
-                {/* Badges */}
-                <div className="space-y-1.5">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                    Earned Badges
+            <div className="space-y-6 flex-1 pl-2">
+              <div className="flex items-center gap-4">
+                <img
+                  src={activeAvatar}
+                  alt={activeName}
+                  className="h-16 w-16 rounded-full border-2 border-teal-500 object-cover shadow-md"
+                />
+                <div>
+                  <span className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest block">
+                    Digital Accessibility Passport
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {passport.badges.map((badge) => (
-                      <Badge key={badge} variant={badge.includes("Streak") || badge.includes("Starter") ? "saffron" : "secondary"}>
-                        {badge}
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5 tracking-tight">
+                    {activeName}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-teal-500" /> {activeCity ? `${activeCity}, ` : ""}{activeState}
+                    </span>
+                    {activeGender && (
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                        {activeGender}
+                      </span>
+                    )}
+                    {activeDob && (
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-teal-500" /> {activeDob}
+                      </span>
+                    )}
+                    {activeCategory && (
+                      <Badge variant="saffron" className="text-[9px]">
+                        {activeCategory}
                       </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                    ISL Level
+                  </span>
+                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                    Level {passport.current_level}
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                    Points
+                  </span>
+                  <span className="text-xs font-extrabold text-orange-550 dark:text-orange-400">
+                    {passport.xp_points} XP
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                    Streak
+                  </span>
+                  <span className="text-xs font-extrabold text-teal-600 dark:text-teal-450 flex items-center gap-1">
+                    <Flame className="h-3.5 w-3.5 fill-current" /> {passport.streak} Days
+                  </span>
+                </div>
+              </div>
+
+              {activeBio && (
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/50 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 italic">
+                  "{activeBio}"
+                </div>
+              )}
+
+              {/* Badges */}
+              <div className="space-y-1.5">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                  Earned Badges
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {passport.badges?.map((badge) => (
+                    <Badge key={badge} variant={badge.includes("Streak") || badge.includes("Starter") ? "saffron" : "secondary"}>
+                      {badge}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Skills & Interests */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-850">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                    Proven Sign Skills
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {passport.skills?.map((skill) => (
+                      <span key={skill} className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800 px-2 py-0.5 rounded-lg">
+                        {skill}
+                      </span>
                     ))}
                   </div>
                 </div>
-
-                {/* Skills & Interests */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-850">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                      Proven Sign Skills
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {passport.skills.map((skill) => (
-                        <span key={skill} className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800 px-2 py-0.5 rounded-lg">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                      Accessibility Interests
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {passport.interests.map((interest) => (
-                        <span key={interest} className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800 px-2 py-0.5 rounded-lg">
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Passport Verification Real Scannable QR */}
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 p-3.5 bg-white dark:bg-slate-950 flex flex-col items-center gap-2 self-stretch sm:self-auto justify-center text-center shrink-0 shadow-sm">
-                <div 
-                  onClick={() => setShowPassportQrModal(true)}
-                  className="relative p-1.5 bg-white rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner cursor-pointer group"
-                  title="Click to enlarge scannable QR code"
-                >
-                  <img
-                    src={passportQrImageUrl}
-                    alt="Scannable ISL Passport QR Code"
-                    className="h-28 w-28 object-contain rounded-lg"
-                  />
-                  <div className="absolute inset-0 bg-teal-600/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
-                    <Maximize2 className="h-6 w-6 text-teal-600 dark:text-teal-400 drop-shadow-md" />
-                  </div>
-                </div>
-                
-                <span className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-wider">
-                  Scan or Click to Verify
-                </span>
-                
-                <Link
-                  to={`/verify/${certIdForQr}`}
-                  className="flex items-center gap-1 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 px-3 py-1.5 text-[9px] text-teal-700 dark:text-teal-350 font-black uppercase tracking-wide transition-all shadow-xs"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                  VERIFY PASSPORT
-                </Link>
-              </div>
-            </div>
-
-            {/* Credentials Section */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-850 pb-2">
-                Accredited Course Certificates
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {passport.certificates.map((cert) => (
-                  <Card key={cert.id} className="border-l-4 border-l-orange-500 p-4 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div className="h-9 w-9 bg-orange-50 dark:bg-orange-950/40 rounded-lg flex items-center justify-center text-orange-500 shrink-0 border border-orange-200/40">
-                          <Award className="h-4.5 w-4.5" />
-                        </div>
-                        <span className="text-[9px] font-black text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 px-2 py-0.5 rounded">
-                          Grade: {cert.grade}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-0.5">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">
-                          Sanket Setu Platform Credential
-                        </span>
-                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug line-clamp-1">
-                          {cert.course_name}
-                        </h4>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between text-[10px] font-extrabold text-slate-450">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {new Date(cert.issue_date).toLocaleDateString()}
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                    Accessibility Interests
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {passport.interests?.map((interest) => (
+                      <span key={interest} className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800 px-2 py-0.5 rounded-lg">
+                        {interest}
                       </span>
-                      
-                      <div className="flex gap-2.5">
-                        <button
-                          onClick={() => setSelectedCert(cert)}
-                          className="text-teal-600 hover:underline flex items-center gap-1 cursor-pointer"
-                        >
-                          <Eye className="h-3.5 w-3.5" /> View
-                        </button>
-                        <a 
-                          href={`/verify/${cert.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-orange-550 hover:underline flex items-center gap-1"
-                        >
-                          Verify <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
+            {/* Passport Verification Real Scannable QR */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 p-3.5 bg-white dark:bg-slate-950 flex flex-col items-center gap-2 self-stretch sm:self-auto justify-center text-center shrink-0 shadow-sm">
+              <div
+                onClick={() => setShowPassportQrModal(true)}
+                className="relative p-1.5 bg-white rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner cursor-pointer group"
+                title="Click to enlarge scannable QR code"
+              >
+                <img
+                  src={passportQrImageUrl}
+                  alt="Scannable ISL Passport QR Code"
+                  className="h-28 w-28 object-contain rounded-lg"
+                />
+                <div className="absolute inset-0 bg-teal-600/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                  <Maximize2 className="h-6 w-6 text-teal-600 dark:text-teal-400 drop-shadow-md" />
+                </div>
+              </div>
+
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-wider">
+                Scan or Click to Verify
+              </span>
+
+              <Link
+                to={`/verify/${certIdForQr}`}
+                className="flex items-center gap-1 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 px-3 py-1.5 text-[9px] text-teal-700 dark:text-teal-350 font-black uppercase tracking-wide transition-all shadow-xs"
+              >
+                <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                VERIFY PASSPORT
+              </Link>
+            </div>
           </div>
 
-          {/* Right Column: Policies & Verification Widget */}
-          <div className="space-y-6 no-print">
-            <Card className="border border-slate-200 dark:border-slate-800/80">
-              <CardHeader className="flex flex-row items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-orange-50 dark:bg-orange-950 text-orange-650 flex items-center justify-center shrink-0">
-                  <UserCheck className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm uppercase tracking-wider font-extrabold">Verification & Audit</CardTitle>
-                  <CardDescription className="text-3xs uppercase font-bold text-slate-400">Accreditation policy</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-2xs text-slate-650 dark:text-slate-400 leading-relaxed font-semibold">
-                  Employers and municipal corporations scan this unique passport card code to verify skill sets before appointing public service assistants or volunteers.
-                </p>
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-xl space-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                  <p className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-teal-600" /> Linked to Jan-Aadhaar profiles
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-teal-600" /> Cryptographic validation tokens
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-teal-600" /> Platform-level learning certificate
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Credentials Section */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-850 pb-2">
+              Accredited Course Certificates
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {passport.certificates?.map((cert) => (
+                <Card key={cert.id} className="border-l-4 border-l-orange-500 p-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="h-9 w-9 bg-orange-50 dark:bg-orange-950/40 rounded-lg flex items-center justify-center text-orange-500 shrink-0 border border-orange-200/40">
+                        <Award className="h-4.5 w-4.5" />
+                      </div>
+                      <span className="text-[9px] font-black text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 px-2 py-0.5 rounded">
+                        Grade: {cert.grade}
+                      </span>
+                    </div>
 
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-950 text-white border-0 shadow-lg">
-              <CardContent className="p-5 space-y-3">
-                <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
-                  <Sparkles className="h-4.5 w-4.5" />
-                </div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-teal-300">
-                  Affirmative Employment Match
-                </h4>
-                <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
-                  Under the RPwD Act, certified ISL-capable citizens are actively prioritized for counter operations and helpdesks across state departments and civic hospitals.
-                </p>
-              </CardContent>
-            </Card>
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">
+                        Sanket Setu Platform Credential
+                      </span>
+                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                        {cert.course_name}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between text-[10px] font-extrabold text-slate-450">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {new Date(cert.issue_date).toLocaleDateString()}
+                    </span>
+
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={() => setSelectedCert(cert)}
+                        className="text-teal-600 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Eye className="h-3.5 w-3.5" /> View
+                      </button>
+                      <a
+                        href={`/verify/${cert.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-orange-550 hover:underline flex items-center gap-1"
+                      >
+                        Verify <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
+
         </div>
-      )}
+
+        {/* Right Column: Policies & Verification Widget */}
+        <div className="space-y-6 no-print">
+          <Card className="border border-slate-200 dark:border-slate-800/80">
+            <CardHeader className="flex flex-row items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-orange-50 dark:bg-orange-950 text-orange-650 flex items-center justify-center shrink-0">
+                <UserCheck className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <CardTitle className="text-sm uppercase tracking-wider font-extrabold">Verification & Audit</CardTitle>
+                <CardDescription className="text-3xs uppercase font-bold text-slate-400">Accreditation policy</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-2xs text-slate-650 dark:text-slate-400 leading-relaxed font-semibold">
+                Employers and municipal corporations scan this unique passport card code to verify skill sets before appointing public service assistants or volunteers.
+              </p>
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-xl space-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                <p className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-teal-600" /> Linked to Jan-Aadhaar profiles
+                </p>
+                <p className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-teal-600" /> Cryptographic validation tokens
+                </p>
+                <p className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-teal-600" /> Platform-level learning certificate
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-slate-900 to-slate-950 text-white border-0 shadow-lg">
+            <CardContent className="p-5 space-y-3">
+              <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
+                <Sparkles className="h-4.5 w-4.5" />
+              </div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-teal-300">
+                Affirmative Employment Match
+              </h4>
+              <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
+                Under the RPwD Act, certified ISL-capable citizens are actively prioritized for counter operations and helpdesks across state departments and civic hospitals.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* DETAILED PRINTABLE CERTIFICATE MODAL */}
       {selectedCert && (
@@ -469,7 +485,7 @@ export default function Passport() {
 
                   {/* Recipient */}
                   <div>
-                    <h3 className="text-2xl font-black text-teal-600 tracking-tight">{passport?.display_name || "Sanket Citizen"}</h3>
+                    <h3 className="text-2xl font-black text-teal-600 tracking-tight">{passport.display_name || "Sanket Citizen"}</h3>
                     <div className="w-32 h-0.25 bg-slate-300 mx-auto mt-1" />
                   </div>
 
@@ -526,7 +542,7 @@ export default function Passport() {
               <div className="space-y-2">
                 <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Certificate of Completion</h1>
                 <p className="text-xs text-slate-500 italic">This is to officially certify that</p>
-                <h3 className="text-3xl font-black text-teal-600 tracking-tight mt-2">{passport?.display_name || "Sanket Citizen"}</h3>
+                <h3 className="text-3xl font-black text-teal-600 tracking-tight mt-2">{passport.display_name || "Sanket Citizen"}</h3>
                 <div className="w-48 h-0.5 bg-slate-350 mx-auto" />
               </div>
 

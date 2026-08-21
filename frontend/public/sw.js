@@ -34,7 +34,7 @@ self.addEventListener("install", (event) => {
             const res = await fetch(url);
             if (res.ok) await emergencyCache.put(url, res);
           } catch (_) {
-            // Network unavailable during install — will be populated on next online visit
+            // Network unavailable during install
           }
         }
       } catch (_) {}
@@ -73,26 +73,68 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Course & lesson assets — Cache First (only if explicitly downloaded)
+  // 2. Course & lesson assets — Network First, fallback to cache
   if (url.pathname.startsWith("/api/learning/") || url.pathname.startsWith("/api/learn/")) {
     event.respondWith(networkFirstWithCache(event.request, COURSE_CACHE));
     return;
   }
 
-  // 3. Scheme info — Network First, fallback to cache (with staleness warning handled in app)
+  // 3. Scheme info — Network First, fallback to cache
   if (url.pathname.startsWith("/api/schemes/")) {
     event.respondWith(networkFirstWithCache(event.request, SCHEME_CACHE));
     return;
   }
 
-  // 4. App shell — Cache First
-  if (url.origin === self.location.origin && !url.pathname.startsWith("/api/")) {
-    event.respondWith(cacheFirst(event.request, SHELL_CACHE));
+  // 4. API Requests — Network Only
+  if (url.pathname.startsWith("/api/")) {
     return;
   }
 
-  // 5. Everything else — Network Only (auth, live, passport)
-  // Pass through — no caching
+  // 5. SPA Navigation requests (HTML page loads / direct routes) — Fallback to /index.html
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          // Try network first to get latest HTML
+          const networkResponse = await fetch(event.request);
+          if (networkResponse.ok) return networkResponse;
+        } catch (_) {}
+
+        // Fallback to cached index.html or root
+        const cachedIndex = (await caches.match("/index.html")) || (await caches.match("/"));
+        if (cachedIndex) return cachedIndex;
+
+        // Try fetching /index.html
+        try {
+          const res = await fetch("/index.html");
+          if (res.ok) return res;
+        } catch (_) {}
+
+        return new Response("Offline", { status: 503, headers: { "Content-Type": "text/html" } });
+      })()
+    );
+    return;
+  }
+
+  // 6. Static assets (JS/CSS/Images/Fonts) — Network First, fallback to cache
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(event.request);
+        try {
+          const res = await fetch(event.request);
+          if (res.ok) {
+            const cache = await caches.open(SHELL_CACHE);
+            cache.put(event.request, res.clone());
+            return res;
+          }
+        } catch (_) {}
+        if (cached) return cached;
+        return fetch(event.request);
+      })()
+    );
+    return;
+  }
 });
 
 // ============================================================
@@ -106,7 +148,6 @@ self.addEventListener("sync", (event) => {
 
 async function flushProgressQueue() {
   try {
-    // Open IndexedDB and drain the pending_progress store
     const db = await openSanketDB();
     const tx = db.transaction("pending_progress", "readwrite");
     const store = tx.objectStore("pending_progress");
@@ -123,9 +164,7 @@ async function flushProgressQueue() {
           const deleteTx = db.transaction("pending_progress", "readwrite");
           deleteTx.objectStore("pending_progress").delete(record.id);
         }
-      } catch (_) {
-        // Will retry on next sync
-      }
+      } catch (_) {}
     }
   } catch (_) {}
 }
@@ -159,7 +198,6 @@ async function cacheCourseAssets(urls, courseId) {
       if (res.ok) await cache.put(url, res);
     } catch (_) {}
   }
-  // Notify all clients
   const clients = await self.clients.matchAll();
   clients.forEach((c) => c.postMessage({ type: "COURSE_CACHED", courseId }));
 }
