@@ -27,21 +27,21 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyle = "inline-flex items-center justify-center font-bold tracking-wide rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00A99D] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+  const baseStyle = "inline-flex items-center justify-center font-bold tracking-wide rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#008F87] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
   
   const variants = {
-    primary: "bg-[#00A99D] hover:bg-[#008F86] text-white shadow-sm dark:bg-[#00A99D] dark:hover:bg-[#008F86]",
-    secondary: "bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-sm dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8]",
-    saffron: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm dark:bg-amber-600 dark:hover:bg-amber-700",
-    outline: "border border-[#E2E8F0] dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[#111827] dark:text-slate-200",
-    ghost: "text-[#111827] dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+    primary: "bg-[#008F87] hover:bg-[#006B66] text-white shadow-2xs dark:bg-[#008F87] dark:hover:bg-[#006B66]",
+    secondary: "bg-[#17233C] hover:bg-[#1E293B] text-white shadow-2xs dark:bg-[#17233C] dark:hover:bg-[#1E293B]",
+    saffron: "bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold shadow-2xs",
+    outline: "border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[#172033] dark:text-slate-200",
+    ghost: "text-[#172033] dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
     danger: "bg-[#DC2626] hover:bg-[#B91C1C] text-white dark:bg-red-950 dark:hover:bg-red-900 dark:text-red-200"
   };
 
   const sizes = {
     sm: "px-3 py-1.5 text-xs gap-1.5",
-    md: "px-4.5 py-2.5 text-sm gap-2",
-    lg: "px-6 py-3.5 text-base gap-2.5"
+    md: "px-4.5 py-2 text-sm gap-2",
+    lg: "px-6 py-3 text-base gap-2.5"
   };
 
   return (
@@ -68,8 +68,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Card: React.FC<CardProps> = ({ children, hoverable = false, className = "", ...props }) => {
   return (
     <div 
-      className={`bg-white dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-800 rounded-2xl p-5 shadow-sm transition-all duration-200 ${
-        hoverable ? "hover:shadow-md hover:border-[#00A99D]/40 hover:-translate-y-0.5" : ""
+      className={`bg-white dark:bg-slate-900 border border-[#E4E7EC] dark:border-slate-800 rounded-2xl p-5 shadow-2xs transition-all duration-200 ${
+        hoverable ? "hover:shadow-xs hover:border-[#008F87]/40 hover:-translate-y-0.5" : ""
       } ${className}`}
       {...props}
     >
@@ -83,11 +83,11 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ chi
 );
 
 export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ children, className = "", ...props }) => (
-  <h3 className={`text-lg font-bold text-[#111827] dark:text-white tracking-tight ${className}`} {...props}>{children}</h3>
+  <h3 className={`text-base font-bold text-[#172033] dark:text-white tracking-tight ${className}`} {...props}>{children}</h3>
 );
 
 export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ children, className = "", ...props }) => (
-  <p className={`text-xs text-[#64748B] dark:text-slate-400 font-semibold tracking-wide ${className}`} {...props}>{children}</p>
+  <p className={`text-xs text-[#667085] dark:text-slate-400 font-semibold tracking-wide ${className}`} {...props}>{children}</p>
 );
 
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = "", ...props }) => (
@@ -95,7 +95,7 @@ export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ ch
 );
 
 export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = "", ...props }) => (
-  <div className={`mt-5 pt-4 border-t border-[#E2E8F0] dark:border-slate-800 flex items-center justify-between gap-2 ${className}`} {...props}>{children}</div>
+  <div className={`mt-5 pt-4 border-t border-[#E4E7EC] dark:border-slate-800 flex items-center justify-between gap-2 ${className}`} {...props}>{children}</div>
 );
 
 // ==========================================
@@ -107,18 +107,18 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = "primary", className = "", ...props }) => {
   const variants = {
-    primary: "bg-[#ECFDFB] text-[#008F86] border-[#00A99D]/20 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700",
-    secondary: "bg-[#ECFDFB] text-[#008F86] border-[#00A99D]/30 dark:bg-[#00A99D]/20 dark:text-[#00A99D] dark:border-[#00A99D]/30",
-    teal: "bg-[#ECFDFB] text-[#008F86] border-[#00A99D]/30 dark:bg-[#00A99D]/20 dark:text-[#00A99D] dark:border-[#00A99D]/30",
-    saffron: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50",
+    primary: "bg-[#008F87]/10 text-[#008F87] border-[#008F87]/20 dark:bg-[#008F87]/20 dark:text-[#008F87] dark:border-[#008F87]/30",
+    secondary: "bg-[#008F87]/10 text-[#008F87] border-[#008F87]/20 dark:bg-[#008F87]/20 dark:text-[#008F87] dark:border-[#008F87]/30",
+    teal: "bg-[#008F87]/10 text-[#008F87] border-[#008F87]/20 dark:bg-[#008F87]/20 dark:text-[#008F87] dark:border-[#008F87]/30",
+    saffron: "bg-[#F59E0B]/10 text-[#D97706] border-[#F59E0B]/30 dark:bg-[#F59E0B]/20 dark:text-[#F59E0B] dark:border-[#F59E0B]/40",
     success: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/50",
     danger: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/50",
-    muted: "bg-slate-100 text-[#64748B] border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800"
+    muted: "bg-slate-100 text-[#667085] border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800"
   };
 
   return (
     <span 
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border ${variants[variant]} ${className}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
@@ -146,24 +146,24 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const heights = {
     sm: "h-1.5",
-    md: "h-2.5",
-    lg: "h-4"
+    md: "h-2",
+    lg: "h-3"
   };
 
   const colors = {
-    teal: "bg-teal-600 dark:bg-teal-500",
-    saffron: "bg-orange-500 dark:bg-orange-600"
+    teal: "bg-[#008F87] dark:bg-[#008F87]",
+    saffron: "bg-[#F59E0B] dark:bg-[#F59E0B]"
   };
 
   return (
     <div className="w-full space-y-1.5">
       {(label || label === "") && (
-        <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-slate-500">
+        <div className="flex items-center justify-between text-xs font-semibold text-[#667085]">
           <span>{label}</span>
-          <span>{percent}%</span>
+          <span className="font-bold text-[#172033] dark:text-white">{percent}%</span>
         </div>
       )}
-      <div className={`w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden ${heights[size]}`}>
+      <div className={`w-full bg-[#E4E7EC] dark:bg-slate-800 rounded-full overflow-hidden ${heights[size]}`}>
         <div 
           className={`h-full rounded-full transition-all duration-500 ease-out ${colors[variant]}`}
           style={{ width: `${percent}%` }}
@@ -660,34 +660,41 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 }) => {
   const getDiffBadge = (diff: string) => {
     const d = diff.toLowerCase();
-    if (d === "beginner") return <Badge variant="secondary">Beginner</Badge>;
+    if (d === "beginner") return <Badge variant="teal">Beginner</Badge>;
     if (d === "intermediate") return <Badge variant="saffron">Intermediate</Badge>;
     return <Badge variant="danger">Advanced</Badge>;
   };
 
+  const ctaText = progressPercent > 0 ? (progressPercent === 100 ? "Review →" : "Continue →") : `${actionLabel} →`;
+
   return (
-    <Card hoverable className="flex flex-col justify-between h-full">
+    <Card hoverable className="flex flex-col justify-between h-full border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-2xs transition-all">
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           {getDiffBadge(difficulty)}
-          <span className="text-3xs font-extrabold uppercase tracking-widest text-slate-500">
-            {xpReward} XP
+          <span className="text-xs font-semibold text-[#667085] dark:text-slate-400">
+            {lessonsCount} interactive modules
           </span>
         </div>
         <div className="space-y-1">
-          <h4 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">{title}</h4>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {lessonsCount} interactive modules
-          </p>
+          <h3 className="text-base font-bold text-[#172033] dark:text-white tracking-tight leading-snug">{title}</h3>
         </div>
       </div>
-      <div className="mt-5 space-y-4">
-        <ProgressBar value={progressPercent} label="Progress" />
-        {onAction && (
-          <Button onClick={onAction} variant="primary" size="sm" className="w-full">
-            {progressPercent > 0 ? (progressPercent === 100 ? "Review Course" : "Continue Course") : actionLabel}
-          </Button>
-        )}
+      <div className="mt-5 space-y-4 pt-1">
+        <ProgressBar value={progressPercent} size="sm" variant="teal" />
+        <div className="flex items-center justify-between pt-1">
+          <span className="text-xs font-bold text-[#008F87] dark:text-teal-400">
+            {xpReward} XP
+          </span>
+          {onAction && (
+            <button
+              onClick={onAction}
+              className="px-3.5 py-1.5 rounded-xl bg-[#008F87] hover:bg-[#006B66] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+            >
+              {ctaText}
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   );

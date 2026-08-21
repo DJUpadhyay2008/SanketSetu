@@ -125,13 +125,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* Welcome Header */}
+      {/* Welcome Header Banner */}
       <section 
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-3xl shadow-md border border-emerald-700/60 relative overflow-hidden"
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 bg-gradient-to-r from-[#17233C] via-[#10344A] to-[#006B66] text-white rounded-2xl shadow-xs border border-[#008F87]/30 relative overflow-hidden"
         aria-label="Welcome banner"
       >
-        <div className="absolute right-0 top-0 h-64 w-64 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-10 bottom-0 h-32 w-32 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute right-0 top-0 h-48 w-48 bg-[#008F87]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-8 bottom-0 h-24 w-24 bg-[#F59E0B]/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="flex items-center gap-4 relative z-10">
           <Avatar 
@@ -141,11 +141,11 @@ export default function Home() {
             active={!!user} 
           />
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-black tracking-tight md:text-3xl text-white flex items-center gap-1.5">
+            <h1 className="text-xl font-bold tracking-tight md:text-2xl text-white flex items-center gap-2">
               {getGreeting()}, {displayName} <span className="animate-bounce">👋</span>
             </h1>
-            <p className="text-xs font-black text-amber-300 uppercase tracking-widest">
-              {profile?.isl_level ? `ISL Level — ${profile.isl_level}` : "ISL Ready India Initiative"}
+            <p className="text-xs font-bold text-[#F59E0B] uppercase tracking-wider">
+              {profile?.isl_level ? `ISL Level — ${profile.isl_level}` : "ISL READY INDIA INITIATIVE"}
             </p>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function Home() {
           <button
             onClick={() => navigate("/live")}
             aria-label="Go to Sanket Live practice"
-            className="px-4.5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-xs flex items-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer"
           >
             <Sparkles className="h-4 w-4 text-slate-950" />
             <span>Practice Live</span>
@@ -162,7 +162,7 @@ export default function Home() {
           {!user && (
             <button
               onClick={() => navigate("/")}
-              className="px-4 py-2.5 rounded-xl bg-white/20 text-white hover:bg-white/30 font-extrabold text-xs border border-white/40 backdrop-blur-xs transition-all active:scale-95 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white/20 font-bold text-xs border border-white/20 transition-all active:scale-95 cursor-pointer"
             >
               Sign In
             </button>
@@ -171,20 +171,20 @@ export default function Home() {
       </section>
 
       {/* Main Grid: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         
         {/* Column 1 & 2: Primary Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           
           {/* Continue Learning */}
           <section className="space-y-3" aria-label="Continue learning section">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
                 Continue Learning
               </h2>
               <Link 
                 to="/learn" 
-                className="text-xs font-bold text-[#00A99D] hover:text-[#008F86] flex items-center gap-1 uppercase tracking-wider"
+                className="text-xs font-bold text-[#008F87] hover:text-[#006B66] flex items-center gap-1 uppercase tracking-wider"
                 aria-label="Go to all courses"
               >
                 All Courses <ArrowRight className="h-3.5 w-3.5" />
@@ -207,20 +207,20 @@ export default function Home() {
 
           {/* AI Recommendation */}
           <section className="space-y-3" aria-label="Personalized recommendation">
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
               Recommended for You
             </h2>
 
             {!user ? (
-              <Card className="border border-teal-200/90 dark:border-slate-800 bg-teal-50/50">
-                <CardContent className="flex flex-col items-center justify-center py-8 gap-3 text-center">
-                  <div className="h-12 w-12 rounded-2xl bg-white border border-teal-200 flex items-center justify-center shadow-2xs">
-                    <Sparkles className="h-6 w-6 text-[#00A99D]" />
+              <Card className="border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900">
+                <CardContent className="flex flex-col items-center justify-center py-7 gap-3 text-center">
+                  <div className="h-10 w-10 rounded-xl bg-[#008F87]/10 border border-[#008F87]/20 flex items-center justify-center shadow-2xs">
+                    <Sparkles className="h-5 w-5 text-[#008F87]" />
                   </div>
-                  <p className="text-xs text-slate-800 dark:text-slate-200 font-bold max-w-sm">
+                  <p className="text-xs text-[#172033] dark:text-slate-200 font-bold max-w-sm">
                     Sign in to get AI-powered personalized ISL learning recommendations.
                   </p>
-                  <Button variant="primary" size="sm" onClick={() => navigate("/")} className="bg-[#00A99D] hover:bg-[#008F86] text-white font-extrabold">
+                  <Button variant="primary" size="sm" onClick={() => navigate("/")} className="bg-[#008F87] hover:bg-[#006B66] text-white font-bold text-xs">
                     Sign In to Unlock
                   </Button>
                 </CardContent>
@@ -228,17 +228,17 @@ export default function Home() {
             ) : recLoading ? (
               <SkeletonCard className="h-28 w-full" />
             ) : recommendation ? (
-              <Card className="border border-teal-200 bg-teal-50/60">
+              <Card className="border border-[#008F87]/20 bg-[#008F87]/5 dark:bg-slate-900 dark:border-slate-800">
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-teal-200 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                      <TrendingUp className="h-4.5 w-4.5 text-[#00A99D]" />
+                    <div className="h-9 w-9 rounded-xl bg-white dark:bg-slate-800 border border-[#008F87]/20 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                      <TrendingUp className="h-4.5 w-4.5 text-[#008F87]" />
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                      <h3 className="text-sm font-bold text-[#172033] dark:text-white">
                         {recommendation.recommended_lesson_title || recommendation.recommended_focus}
                       </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold leading-relaxed line-clamp-2">
+                      <p className="text-xs text-[#667085] dark:text-slate-400 font-medium leading-relaxed line-clamp-2">
                         {recommendation.practice_suggestion}
                       </p>
                     </div>
@@ -246,7 +246,7 @@ export default function Home() {
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    className="w-full font-extrabold text-xs bg-[#00A99D] hover:bg-[#008F86] text-white"
+                    className="w-full font-bold text-xs bg-[#008F87] hover:bg-[#006B66] text-white"
                     onClick={() => navigate("/learn")}
                   >
                     Start Recommended Lesson →
@@ -254,9 +254,9 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border border-slate-300 dark:border-slate-800">
+              <Card className="border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900">
                 <CardContent className="flex items-center justify-center py-6">
-                  <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+                  <p className="text-xs text-[#667085] dark:text-slate-400 font-medium">
                     Complete your first lesson to unlock personalized recommendations.
                   </p>
                 </CardContent>
@@ -267,12 +267,12 @@ export default function Home() {
           {/* Top ISL-Ready Institutions */}
           <section className="space-y-3" aria-label="ISL-Ready institutions">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
                 ISL-Ready Institutions
               </h2>
               <Link 
                 to="/institution" 
-                className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 uppercase tracking-wider"
+                className="text-xs font-bold text-[#008F87] hover:text-[#006B66] flex items-center gap-1 uppercase tracking-wider"
               >
                 View Index <ArrowRight className="h-3.5 w-3.5" />
               </Link>
@@ -303,60 +303,58 @@ export default function Home() {
         </div>
 
         {/* Column 3: Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           
           {/* Progress & Streak Stats */}
           <section className="space-y-3" aria-label="Your learning progress">
-            <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
               Your Progress
             </h2>
-            <Card className="border border-slate-300 dark:border-slate-800">
+            <Card className="border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900">
               <CardContent className="space-y-4">
                 {/* Level / XP */}
-                <div className="flex items-center justify-between p-3.5 bg-slate-100/70 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 block">
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-[#E4E7EC] dark:border-slate-800">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400 block">
                       Current Rank
                     </span>
-                    <span className="text-lg font-black text-slate-900 dark:text-white">
-                      {user ? `Level ${userLevel}` : "—"}
+                    <span className="text-base font-bold text-[#172033] dark:text-white">
+                      {user ? `Level ${userLevel}` : "Level 1"}
                     </span>
                   </div>
-                  <Badge variant="secondary" className="px-3 py-1 font-extrabold">
-                    {user ? `${userXP.toLocaleString()} XP` : "Sign in"}
+                  <Badge variant="teal" className="px-2.5 py-1 font-bold">
+                    {user ? `${userXP.toLocaleString()} XP` : "0 XP"}
                   </Badge>
                 </div>
 
                 {/* Streak */}
-                <div className="flex items-center gap-3.5 p-3.5 bg-orange-100/60 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-900/30">
-                  <div className="h-10 w-10 bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-3 p-3.5 bg-[#F59E0B]/10 dark:bg-[#F59E0B]/20 rounded-xl border border-[#F59E0B]/20">
+                  <div className="h-9 w-9 bg-[#F59E0B] text-slate-950 rounded-lg flex items-center justify-center shrink-0 shadow-2xs">
                     <Flame className="h-5 w-5 fill-current" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 block">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706] dark:text-[#F59E0B] block">
                       Daily Streak
                     </span>
-                    <span className="text-base font-extrabold text-slate-900 dark:text-white">
-                      {user ? `${userStreak} ${userStreak === 1 ? 'Day' : 'Days'} Active 🔥` : "Start your streak!"}
+                    <span className="text-sm font-bold text-[#172033] dark:text-white">
+                      {user ? `${userStreak} ${userStreak === 1 ? 'Day' : 'Days'} Active 🔥` : "1 Day Active 🔥"}
                     </span>
                   </div>
                 </div>
 
                 {/* Next Milestone */}
-                {user && (
-                  <div className="pt-1">
-                    <ProgressBar value={milestonePercent} label={`Milestone: Level ${userLevel + 1}`} size="sm" variant="saffron" />
-                  </div>
-                )}
+                <div className="pt-1">
+                  <ProgressBar value={milestonePercent} label={`Milestone: Level ${userLevel + 1}`} size="sm" variant="saffron" />
+                </div>
 
                 {!user && (
                   <Button
-                    variant="secondary"
-                    className="w-full text-xs font-extrabold"
+                    variant="outline"
+                    className="w-full text-xs font-bold border-[#E4E7EC]"
                     onClick={() => navigate("/")}
-                    leftIcon={<Zap className="h-4 w-4" />}
+                    leftIcon={<Zap className="h-4 w-4 text-[#008F87]" />}
                   >
-                    Sign In to Track Progress
+                    Sign In to Sync Progress
                   </Button>
                 )}
               </CardContent>
@@ -365,28 +363,28 @@ export default function Home() {
 
           {/* Quick Actions Grid */}
           <section className="space-y-3" aria-label="Quick action shortcuts">
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
               Quick Actions
             </h2>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Learn ISL",   icon: BookOpen,      path: "/learn",       accent: "bg-teal-50 text-[#00A99D] border-teal-200 group-hover:bg-[#00A99D] group-hover:text-white"   },
-                { label: "Find Schemes",icon: FileText,       path: "/schemes",     accent: "bg-blue-50 text-blue-600 border-blue-200 group-hover:bg-blue-600 group-hover:text-white" },
-                { label: "Get Assist",  icon: HeartHandshake, path: "/assist",      accent: "bg-emerald-50 text-emerald-600 border-emerald-200 group-hover:bg-emerald-600 group-hover:text-white"   },
-                { label: "Community",   icon: Users,          path: "/community",   accent: "bg-purple-50 text-purple-600 border-purple-200 group-hover:bg-purple-600 group-hover:text-white"   },
-                { label: "Leaderboard", icon: Trophy,         path: "/leaderboard", accent: "bg-amber-50 text-amber-600 border-amber-200 group-hover:bg-amber-600 group-hover:text-white" },
-                { label: "ISL Index",   icon: Building2,      path: "/institution", accent: "bg-indigo-50 text-indigo-600 border-indigo-200 group-hover:bg-indigo-600 group-hover:text-white"   },
-              ].map(({ label, icon: Icon, path, accent }) => (
+                { label: "Learn ISL",   icon: BookOpen,      path: "/learn" },
+                { label: "Find Schemes",icon: FileText,       path: "/schemes" },
+                { label: "Get Assist",  icon: HeartHandshake, path: "/assist" },
+                { label: "Community",   icon: Users,          path: "/community" },
+                { label: "Leaderboard", icon: Trophy,         path: "/leaderboard" },
+                { label: "ISL Index",   icon: Building2,      path: "/institution" },
+              ].map(({ label, icon: Icon, path }) => (
                 <button
                   key={path}
                   onClick={() => navigate(path)}
-                  className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-slate-300 hover:shadow-md transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer shadow-2xs active:scale-95 group"
+                  className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E4E7EC] dark:border-slate-800 hover:border-[#008F87]/40 hover:shadow-2xs transition-all flex flex-col items-center justify-center text-center gap-2 cursor-pointer shadow-2xs active:scale-95 group"
                   aria-label={`Navigate to ${label}`}
                 >
-                  <div className={`h-10 w-10 rounded-xl border flex items-center justify-center transition-all ${accent}`}>
-                    <Icon className="h-5 w-5" />
+                  <div className="h-9 w-9 rounded-xl bg-[#008F87]/10 text-[#008F87] flex items-center justify-center transition-colors group-hover:bg-[#008F87] group-hover:text-white">
+                    <Icon className="h-4.5 w-4.5" />
                   </div>
-                  <span className="text-2xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                  <span className="text-[11px] font-bold text-[#172033] dark:text-slate-200">
                     {label}
                   </span>
                 </button>
@@ -397,31 +395,31 @@ export default function Home() {
           {/* Mini Leaderboard */}
           <section className="space-y-3" aria-label="Weekly leaderboard preview">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#667085] dark:text-slate-400">
                 Weekly Leaders
               </h2>
               <Link 
-                to="/leaderboard" 
-                className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 uppercase tracking-wider"
+                to="/learn" 
+                className="text-xs font-bold text-[#008F87] hover:text-[#006B66] flex items-center gap-1 uppercase tracking-wider"
               >
                 Full list <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <Card className="border border-slate-300 dark:border-slate-800">
+            <Card className="border border-[#E4E7EC] dark:border-slate-800 bg-white dark:bg-slate-900">
               <CardContent className="space-y-3 py-2">
                 {DEMO_LEADERBOARD.map((entry) => (
                   <div key={entry.rank} className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className={`text-xs font-black w-5 text-center ${
-                        entry.rank === 1 ? "text-orange-500" : entry.rank === 3 ? "text-amber-600" : "text-slate-400"
+                      <span className={`text-xs font-bold w-5 text-center ${
+                        entry.rank === 1 ? "text-[#F59E0B]" : entry.rank === 2 ? "text-slate-400" : "text-amber-700"
                       }`}>
                         {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : "🥉"}
                       </span>
-                      <span className={`text-xs font-bold ${entry.isMe ? "text-teal-600 dark:text-teal-400 font-black" : "text-slate-800 dark:text-slate-200"}`}>
+                      <span className={`text-xs font-bold ${entry.isMe ? "text-[#008F87] dark:text-teal-400" : "text-[#172033] dark:text-slate-200"}`}>
                         {entry.isMe ? `${displayName} (You)` : entry.name}
                       </span>
                     </div>
-                    <span className={`text-2xs font-extrabold ${entry.isMe ? "text-teal-600 dark:text-teal-400" : "text-slate-500"}`}>
+                    <span className={`text-xs font-semibold ${entry.isMe ? "text-[#008F87] dark:text-teal-400 font-bold" : "text-[#667085]"}`}>
                       {entry.xp.toLocaleString()} XP
                     </span>
                   </div>

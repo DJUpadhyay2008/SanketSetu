@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   Menu, X, Home, BookOpen, FileText, HeartHandshake, 
   Award, Users, Trophy, Building2, Bell, Settings,
-  Volume2, WifiOff, Zap, Eye
+  Volume2, WifiOff, Zap, Eye, ChevronDown, LogOut
 } from "lucide-react";
 import { fetchFromApi } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
@@ -16,6 +16,7 @@ interface AppShellProps {
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, profile, account, loading, loginWithEmail, registerWithEmail, logout } = useAuth();
   
   // Auth Modal State
@@ -203,27 +204,27 @@ export default function AppShell({ children }: AppShellProps) {
       </a>
 
       {/* Top Brand Accent Line */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-[3.5px] bg-gradient-to-r from-[#10B981] via-[#F59E0B] to-[#10B981]" />
+      <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-[#008F87]" />
 
       {/* Header bar - Fixed at Top */}
-      <header className="fixed top-[3.5px] left-0 right-0 z-40 h-[57px] bg-white/95 backdrop-blur-md text-zinc-800 border-b border-zinc-200/90 px-4 py-3 flex items-center justify-between shadow-2xs">
+      <header className="fixed top-[3px] left-0 right-0 z-40 h-[57px] bg-white/95 dark:bg-[#17233C]/95 backdrop-blur-md text-[#172033] dark:text-slate-100 border-b border-[#E4E7EC] dark:border-[#2A3547] px-4 py-3 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-zinc-100 text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#10B981] cursor-pointer"
+            className="md:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008F87] cursor-pointer"
             aria-label="Toggle navigation menu"
             aria-expanded={sidebarOpen}
           >
-            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           
-          <Link to="/" className="flex items-center gap-2.5 font-black tracking-tight text-xl text-zinc-900 group">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white font-black text-sm shadow-xs group-hover:scale-105 transition-transform">
+          <Link to="/" className="flex items-center gap-2.5 font-bold tracking-tight text-lg text-[#172033] dark:text-white group">
+            <div className="h-8 w-8 rounded-xl bg-[#008F87] flex items-center justify-center text-white font-black text-sm shadow-2xs group-hover:bg-[#006B66] transition-colors">
               S
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[#059669]">Sanket</span>
-              <span className="border-l border-zinc-200 pl-2 text-xs text-zinc-500 font-extrabold tracking-wider uppercase hidden sm:inline">Setu</span>
+              <span className="text-[#008F87] font-black">Sanket</span>
+              <span className="border-l border-[#E4E7EC] dark:border-slate-700 pl-2 text-xs text-[#667085] dark:text-slate-400 font-bold tracking-wider uppercase hidden sm:inline">Setu</span>
             </div>
           </Link>
         </div>
@@ -231,11 +232,11 @@ export default function AppShell({ children }: AppShellProps) {
         {/* Accessibility & Connection Toggles */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Connection Status indicator */}
-          <div className="hidden xs:flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-2xs font-bold border border-emerald-200/80">
-            <span className={`h-2.5 w-2.5 rounded-full ${
-              backendStatus === "online" ? "bg-emerald-500 animate-pulse" : backendStatus === "offline" ? "bg-rose-500" : "bg-zinc-400"
+          <div className="hidden xs:flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 text-[11px] font-semibold border border-emerald-200/80 dark:border-emerald-900/50">
+            <span className={`h-2 w-2 rounded-full ${
+              backendStatus === "online" ? "bg-[#12B76A]" : backendStatus === "offline" ? "bg-rose-500" : "bg-zinc-400"
             }`} />
-            <span className="text-emerald-800">
+            <span className="text-emerald-800 dark:text-emerald-300">
               API: {backendStatus === "online" ? "ONLINE" : backendStatus === "offline" ? "OFFLINE" : "CHECKING"}
             </span>
           </div>
@@ -245,61 +246,101 @@ export default function AppShell({ children }: AppShellProps) {
             {/* Notification Bell */}
             <button
               onClick={() => setNotificationsOpen(true)}
-              className="relative p-2 rounded-xl bg-zinc-100/80 text-zinc-700 hover:bg-zinc-200/80 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#10B981] cursor-pointer transition-colors"
+              className="relative p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 border border-[#E4E7EC] dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008F87] cursor-pointer transition-colors"
               aria-label="Open notifications"
             >
               <Bell className="h-4.5 w-4.5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
+                <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-[#F59E0B] ring-2 ring-white" />
               )}
             </button>
 
             {/* Accessibility Settings Shortcut */}
             <button
               onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-xl bg-zinc-100/80 text-zinc-700 hover:bg-zinc-200/80 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#10B981] cursor-pointer transition-colors"
+              className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 border border-[#E4E7EC] dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008F87] cursor-pointer transition-colors"
               aria-label="Open accessibility and UI settings"
             >
               <Settings className="h-4.5 w-4.5" />
             </button>
           </div>
 
-          {/* Supabase Email/Password Auth State */}
-          <div className="flex items-center gap-2 border-l border-zinc-200 pl-3 sm:pl-4">
+          {/* User Profile & Auth Trigger */}
+          <div className="flex items-center gap-2 border-l border-[#E4E7EC] dark:border-slate-700 pl-3 sm:pl-4 relative">
             {loading ? (
               <div className="flex items-center gap-1.5">
                 <div className="h-5 w-5 rounded-full skeleton" />
                 <span className="text-zinc-500 text-xs">Loading…</span>
               </div>
             ) : user ? (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex flex-col items-end hidden md:flex">
-                  <span className="text-xs font-bold text-zinc-800">
-                    {profile?.display_name || user.email}
-                  </span>
-                  {account?.roles && (
-                    <span className="text-[9px] text-[#059669] font-extrabold uppercase tracking-widest">
-                      {account.roles[0]}
-                    </span>
-                  )}
-                </div>
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.display_name || "User Avatar"}
-                    className="h-8 w-8 rounded-full border border-[#10B981] object-cover shadow-2xs"
-                  />
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-[#10B981] text-white flex items-center justify-center font-bold text-sm shadow-2xs">
-                    {profile?.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
-                  </div>
-                )}
+              <div className="relative">
                 <button
-                  onClick={() => logout()}
-                  className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-2xs font-bold border border-zinc-200 cursor-pointer"
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none cursor-pointer"
                 >
-                  Out
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.display_name || "User Avatar"}
+                      className="h-8 w-8 rounded-full border border-[#008F87] object-cover shadow-2xs"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-[#008F87] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                      {profile?.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-[#172033] dark:text-slate-100 hidden md:inline max-w-[120px] truncate">
+                    {profile?.display_name || user.email?.split('@')[0]}
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden md:inline" />
                 </button>
+
+                {/* Profile Dropdown Menu */}
+                {profileMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setProfileMenuOpen(false)} 
+                    />
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-[#E4E7EC] dark:border-slate-800 rounded-2xl shadow-lg z-50 p-2 space-y-1">
+                      <div className="px-3 py-2 border-b border-[#E4E7EC] dark:border-slate-800">
+                        <p className="text-xs font-bold text-[#172033] dark:text-white truncate">
+                          {profile?.display_name || "User Profile"}
+                        </p>
+                        <p className="text-[11px] text-[#667085] dark:text-slate-400 truncate">
+                          {user.email}
+                        </p>
+                        {account?.roles && (
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded bg-[#008F87]/10 text-[#008F87] text-[10px] font-bold uppercase">
+                            {account.roles[0]}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          setSettingsOpen(true);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-left cursor-pointer"
+                      >
+                        <Settings className="h-4 w-4 text-slate-500" />
+                        Accessibility & Settings
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut className="h-4 w-4 text-rose-500" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <button
@@ -307,7 +348,7 @@ export default function AppShell({ children }: AppShellProps) {
                   setAuthError(null);
                   setAuthModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white text-xs font-black transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#008F87] hover:bg-[#006B66] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
               >
                 <span>LOGIN</span>
               </button>
@@ -319,12 +360,12 @@ export default function AppShell({ children }: AppShellProps) {
       <div className="flex-1 flex relative pt-[60px]">
         {/* Sidebar for Desktop & Mobile Drawer */}
         <aside 
-          className={`fixed top-[60px] bottom-0 left-0 z-30 w-64 bg-zinc-900 text-zinc-300 border-r border-zinc-800 flex flex-col justify-between p-3.5 transform transition-transform duration-200 ease-in-out md:transform-none ${
+          className={`fixed top-[60px] bottom-0 left-0 z-30 w-64 bg-[#17233C] text-slate-300 border-r border-[#2A3547] flex flex-col justify-between p-3.5 transform transition-transform duration-200 ease-in-out md:transform-none ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 h-[calc(100vh-60px)] shrink-0 overflow-hidden shadow-md`}
           aria-label="Main sidebar navigation"
         >
-          <nav className="space-y-1 overflow-y-auto flex-1 pr-1 custom-scrollbar" aria-label="Sidebar links">
+          <nav className="space-y-1.5 overflow-y-auto flex-1 pr-1 custom-scrollbar" aria-label="Sidebar links">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -333,13 +374,13 @@ export default function AppShell({ children }: AppShellProps) {
                   key={item.name}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold tracking-wide transition-all focus:outline-none focus:ring-2 focus:ring-[#10B981] ${
+                  className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold tracking-wide transition-all focus:outline-none ${
                     isActive 
-                      ? "bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black shadow-md shadow-emerald-950/60 border border-emerald-400/30" 
-                      : "text-zinc-400 hover:text-white hover:bg-zinc-800/80"
+                      ? "bg-[#008F87]/15 text-[#008F87] font-bold border-l-2 border-[#008F87]" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                   }`}
                 >
-                  <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? "text-white" : "text-zinc-400"}`} />
+                  <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? "text-[#008F87]" : "text-slate-400"}`} />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -347,12 +388,12 @@ export default function AppShell({ children }: AppShellProps) {
           </nav>
 
           {/* Sidebar Footer pinned cleanly at bottom */}
-          <div className="pt-3 mt-2 border-t border-zinc-800/80 text-zinc-400 text-3xs space-y-1 font-bold uppercase tracking-wider px-2 shrink-0 bg-zinc-950/60 rounded-xl p-2.5">
-            <p className="text-zinc-200 font-extrabold flex items-center justify-between">
+          <div className="pt-3 mt-2 border-t border-[#2A3547] text-slate-400 text-[10px] space-y-1 font-semibold uppercase tracking-wider px-2 shrink-0 bg-slate-900/40 rounded-xl p-2.5">
+            <p className="text-slate-200 font-bold flex items-center justify-between">
               <span>Sanket Setu</span>
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-[#12B76A]" />
             </p>
-            <p className="text-[#10B981] text-4xs font-bold">v1.0 · Hackathon 2026 · ISL India</p>
+            <p className="text-slate-400 text-[9px]">v1.0 · Hackathon 2026 · ISL India</p>
           </div>
         </aside>
 

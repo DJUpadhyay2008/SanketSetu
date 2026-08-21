@@ -49,62 +49,62 @@
 }
 
 :root {
-    --background: #F4F5F7;
-    --foreground: #18181B;
+    --background: #F5F7FA;
+    --foreground: #172033;
     --card: #FFFFFF;
-    --card-foreground: #18181B;
+    --card-foreground: #172033;
     --popover: #FFFFFF;
-    --popover-foreground: #18181B;
-    --primary: #18181B;
+    --popover-foreground: #172033;
+    --primary: #008F87;
     --primary-foreground: #FFFFFF;
-    --secondary: #F59E0B;
-    --secondary-foreground: #18181B;
-    --accent: #10B981;
+    --secondary: #006B66;
+    --secondary-foreground: #FFFFFF;
+    --accent: #008F87;
     --accent-foreground: #FFFFFF;
-    --muted: #F4F4F5;
-    --muted-foreground: #71717A;
+    --muted: #F5F7FA;
+    --muted-foreground: #667085;
     --destructive: #DC2626;
-    --border: #E4E4E7;
-    --input: #E4E4E7;
-    --ring: #10B981;
-    --radius: 0.75rem;
-    --sidebar: #18181B;
-    --sidebar-foreground: #A1A1AA;
-    --sidebar-primary: #10B981;
+    --border: #E4E7EC;
+    --input: #E4E7EC;
+    --ring: #008F87;
+    --radius: 1rem;
+    --sidebar: #17233C;
+    --sidebar-foreground: #94A3B8;
+    --sidebar-primary: #008F87;
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #27272A;
+    --sidebar-accent: #1E293B;
     --sidebar-accent-foreground: #FFFFFF;
-    --sidebar-border: #27272A;
-    --sidebar-ring: #10B981;
+    --sidebar-border: #2A3547;
+    --sidebar-ring: #008F87;
 }
 
 .dark {
-    --background: #09090B;
-    --foreground: #FAFAFA;
-    --card: #18181B;
-    --card-foreground: #FAFAFA;
-    --popover: #09090B;
-    --popover-foreground: #FAFAFA;
-    --primary: #FAFAFA;
-    --primary-foreground: #09090B;
-    --secondary: #F59E0B;
+    --background: #0F172A;
+    --foreground: #F8FAFC;
+    --card: #1E293B;
+    --card-foreground: #F8FAFC;
+    --popover: #1E293B;
+    --popover-foreground: #F8FAFC;
+    --primary: #008F87;
+    --primary-foreground: #FFFFFF;
+    --secondary: #006B66;
     --secondary-foreground: #FFFFFF;
-    --accent: #10B981;
+    --accent: #008F87;
     --accent-foreground: #FFFFFF;
-    --muted: #18181B;
-    --muted-foreground: #A1A1AA;
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
     --destructive: #EF4444;
-    --border: #27272A;
-    --input: #27272A;
-    --ring: #10B981;
-    --sidebar: #18181B;
-    --sidebar-foreground: #A1A1AA;
-    --sidebar-primary: #10B981;
+    --border: #334155;
+    --input: #334155;
+    --ring: #008F87;
+    --sidebar: #17233C;
+    --sidebar-foreground: #94A3B8;
+    --sidebar-primary: #008F87;
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #27272A;
+    --sidebar-accent: #1E293B;
     --sidebar-accent-foreground: #FFFFFF;
-    --sidebar-border: #27272A;
-    --sidebar-ring: #10B981;
+    --sidebar-border: #2A3547;
+    --sidebar-ring: #008F87;
 }
 
 @layer base {
@@ -113,11 +113,8 @@
     }
   body {
     @apply bg-background text-foreground;
-    background-color: #F4F5F7;
-    background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-                      radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.06) 0px, transparent 50%);
-    background-attachment: fixed;
-    color: #18181B;
+    background-color: #F5F7FA;
+    color: #172033;
   }
   html {
     @apply font-sans;
@@ -127,12 +124,12 @@
   /* Scrollbar styling — subtle, matches dark navy */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #64748B; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
   /* Focus visible — ensure keyboard users can see focus */
   :focus-visible {
-    outline: 2px solid #00A99D;
+    outline: 2px solid #008F87;
     outline-offset: 2px;
   }
 
