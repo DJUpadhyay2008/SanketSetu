@@ -247,7 +247,10 @@ export default function SanketLive() {
                   const wristY = landmarks[0].y * canvas.height;
 
                   ctx.save();
-                  // Reset mirror transform for text so it reads left-to-right legibly
+                  // Un-mirror text transformation so it reads left-to-right correctly
+                  ctx.translate(wristX, wristY);
+                  ctx.scale(-1, 1);
+
                   ctx.font = "bold 16px sans-serif";
                   const textWidth = ctx.measureText(displayLabel).width;
                   
@@ -256,14 +259,15 @@ export default function SanketLive() {
                   ctx.strokeStyle = stable ? "#2dd4bf" : "#f97316";
                   ctx.lineWidth = 1.5;
                   ctx.beginPath();
-                  ctx.roundRect(wristX - textWidth / 2 - 8, wristY - 42, textWidth + 16, 26, 6);
+                  ctx.roundRect(-textWidth / 2 - 8, -42, textWidth + 16, 26, 6);
                   ctx.fill();
                   ctx.stroke();
 
                   // Text label
                   ctx.fillStyle = "#FFFFFF";
                   ctx.textAlign = "center";
-                  ctx.fillText(displayLabel, wristX, wristY - 24);
+                  ctx.textBaseline = "middle";
+                  ctx.fillText(displayLabel, 0, -29);
                   ctx.restore();
                 }
               });
