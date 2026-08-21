@@ -68,9 +68,9 @@ export default function Passport() {
           phone: profile?.phone || "+91 98765 43210",
           bio: profile?.bio || "Certified ISL Learner dedicated to civic inclusion.",
           disability_category: profile?.disability_category || "Deaf / Hard of Hearing",
-          current_level: 2,
-          xp_points: 1240,
-          streak: 5,
+          current_level: profile?.rank_level || 1,
+          xp_points: profile?.xp ?? 0,
+          streak: profile?.streak_days ?? 1,
           badges: ["Quick Starter", "First Greeting", "Daily Streak", "Community Pilot"],
           certificates: [
             {

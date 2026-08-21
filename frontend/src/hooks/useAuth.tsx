@@ -14,6 +14,9 @@ export interface UserProfile {
   bio?: string | null;
   disability_category?: string | null;
   isl_level: string;
+  xp?: number;
+  streak_days?: number;
+  rank_level?: number;
   badges: string[];
   interests: string[];
   created_at: string;
@@ -145,6 +148,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       bio: cachedProfile?.bio || '',
       disability_category: cachedProfile?.disability_category || 'Deaf / Hard of Hearing',
       isl_level: cachedProfile?.isl_level || 'Level 1 (Beginner)',
+      xp: cachedProfile?.xp ?? 0,
+      streak_days: cachedProfile?.streak_days ?? 1,
+      rank_level: cachedProfile?.rank_level ?? 1,
       badges: ['ISL Pioneer', 'Verified Citizen'],
       interests: cachedProfile?.interests || ['Everyday Communication', 'Healthcare ISL'],
       created_at: new Date().toISOString(),

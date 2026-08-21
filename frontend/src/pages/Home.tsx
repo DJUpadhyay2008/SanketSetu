@@ -78,6 +78,13 @@ export default function Home() {
 
   const displayName = profile?.display_name || (user ? user.email?.split("@")[0] : "Friend");
 
+  // Dynamic Progress calculations
+  const userXP = user ? (profile?.xp ?? 0) : 0;
+  const userStreak = user ? (profile?.streak_days ?? 1) : 0;
+  const userLevel = user ? (profile?.rank_level ?? Math.max(1, Math.floor(userXP / 200) + 1)) : 1;
+  const levelBaseXP = (userLevel - 1) * 200;
+  const milestonePercent = Math.min(100, Math.round(((userXP - levelBaseXP) / 200) * 100));
+
   // ── TanStack Query: Courses with progress ──────────────────
   const { data: courses, isLoading: coursesLoading } = useQuery<CourseProgress[]>({
     queryKey: ["home-courses"],
@@ -312,11 +319,11 @@ export default function Home() {
                       Current Rank
                     </span>
                     <span className="text-lg font-black text-slate-900 dark:text-white">
-                      {user ? "Level 7" : "—"}
+                      {user ? `Level ${userLevel}` : "—"}
                     </span>
                   </div>
-                  <Badge variant="secondary" className="px-3 py-1">
-                    {user ? "1,240 XP" : "Sign in"}
+                  <Badge variant="secondary" className="px-3 py-1 font-extrabold">
+                    {user ? `${userXP.toLocaleString()} XP` : "Sign in"}
                   </Badge>
                 </div>
 
@@ -330,7 +337,7 @@ export default function Home() {
                       Daily Streak
                     </span>
                     <span className="text-base font-extrabold text-slate-900 dark:text-white">
-                      {user ? "12 Days Active 🔥" : "Start your streak!"}
+                      {user ? `${userStreak} ${userStreak === 1 ? 'Day' : 'Days'} Active 🔥` : "Start your streak!"}
                     </span>
                   </div>
                 </div>
@@ -338,7 +345,7 @@ export default function Home() {
                 {/* Next Milestone */}
                 {user && (
                   <div className="pt-1">
-                    <ProgressBar value={82} label="Milestone: Level 8" size="sm" variant="saffron" />
+                    <ProgressBar value={milestonePercent} label={`Milestone: Level ${userLevel + 1}`} size="sm" variant="saffron" />
                   </div>
                 )}
 
