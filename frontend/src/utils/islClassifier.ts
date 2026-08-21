@@ -2,7 +2,7 @@
  * islClassifier.ts
  * Real-time client-side ISL Landmark Normalizer and Deterministic Classifier.
  * Processes 21-point MediaPipe hand landmarks into normalized feature vectors
- * and classifies ISL signs/alphabets with frame stability filtering.
+ * and classifies ISL signs with high-accuracy geometric rules & priority evaluation.
  */
 
 export interface NormalizedLandmark {
@@ -42,8 +42,6 @@ export function normalizeLandmarks(landmarks: NormalizedLandmark[]): number[] {
   if (!landmarks || landmarks.length < 21) return new Array(63).fill(0);
 
   const wrist = landmarks[0];
-
-  // Scale factor: distance between wrist (0) and middle finger MCP joint (9)
   const middleMcp = landmarks[9];
   const dx = middleMcp.x - wrist.x;
   const dy = middleMcp.y - wrist.y;
@@ -61,12 +59,12 @@ export function normalizeLandmarks(landmarks: NormalizedLandmark[]): number[] {
 }
 
 /**
- * Calculate 3D Euclidean distance between two landmark indices
+ * Calculate 3D Euclidean distance between two landmark points
  */
-function getDistance(pts: NormalizedLandmark[], i: number, j: number): number {
-  const dx = pts[i].x - pts[j].x;
-  const dy = pts[i].y - pts[j].y;
-  const dz = pts[i].z - pts[j].z;
+function getDistance(p1: NormalizedLandmark, p2: NormalizedLandmark): number {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  const dz = p1.z - p2.z;
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -74,9 +72,9 @@ function getDistance(pts: NormalizedLandmark[], i: number, j: number): number {
  * Check if a finger is extended (tip further from wrist than PIP joint)
  */
 function isFingerExtended(pts: NormalizedLandmark[], tipIdx: number, pipIdx: number): boolean {
-  const wristDistTip = getDistance(pts, tipIdx, 0);
-  const wristDistPip = getDistance(pts, pipIdx, 0);
-  return wristDistTip > wristDistPip * 1.1;
+  const wristDistTip = getDistance(pts[tipIdx], pts[0]);
+  const wristDistPip = getDistance(pts[pipIdx], pts[0]);
+  return wristDistTip > wristDistPip * 1.05;
 }
 
 /**
@@ -93,60 +91,51 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   }
 
   // ----------------------------------------------------
-  // TWO HAND GESTURES
+  // TWO-HAND GESTURES (Namaste, Help)
   // ----------------------------------------------------
   if (hands.length >= 2) {
     const h1 = hands[0].landmarks;
     const h2 = hands[1].landmarks;
 
-    const w1 = h1[0];
-    const w2 = h2[0];
-    const wristDistance = Math.sqrt(
-      Math.pow(w1.x - w2.x, 2) + Math.pow(w1.y - w2.y, 2) + Math.pow(w1.z - w2.z, 2)
-    );
+    const wristDist = getDistance(h1[0], h2[0]);
+    const indexTipDist = getDistance(h1[8], h2[8]);
+    const middleMcpDist = getDistance(h1[9], h2[9]);
 
-    // NAMASTE: Both wrists and index fingertips close together in chest center
-    const indexTip1 = h1[8];
-    const indexTip2 = h2[8];
-    const tipDistance = Math.sqrt(
-      Math.pow(indexTip1.x - indexTip2.x, 2) +
-      Math.pow(indexTip1.y - indexTip2.y, 2) +
-      Math.pow(indexTip1.z - indexTip2.z, 2)
-    );
+    // HELP: One hand flat/open, one hand closed fist or thumb up
+    const h1ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h1, t, [2, 6, 10, 14, 18][i])).length;
+    const h2ExtCount = [4, 8, 12, 16, 20].filter((t, i) => isFingerExtended(h2, t, [2, 6, 10, 14, 18][i])).length;
 
-    if (wristDistance < 0.35 && tipDistance < 0.25) {
+    const oneFlatOneFist = (h1ExtCount >= 3 && h2ExtCount <= 2) || (h2ExtCount >= 3 && h1ExtCount <= 2);
+
+    if (oneFlatOneFist && wristDist < 0.55) {
       return {
-        sign: "Namaste",
-        confidence: 0.92,
-        feedback: "✓ Both palms joined in Anjali Mudra posture. Excellent Namaste sign!",
+        sign: "Help",
+        confidence: 0.91,
+        feedback: "✓ Supported fist on open palm detected. Help sign recognized!",
         handsCount: hands.length,
       };
     }
 
-    // HELP: One palm flat facing up, other fist with thumb up resting on it
-    const h1Flat = isFingerExtended(h1, 8, 6) && isFingerExtended(h1, 12, 10) && isFingerExtended(h1, 16, 14);
-    const h2Fist = !isFingerExtended(h2, 8, 6) && !isFingerExtended(h2, 12, 10);
-    if ((h1Flat && h2Fist) || (h2Fist && h1Flat)) {
-      if (wristDistance < 0.45) {
-        return {
-          sign: "Help",
-          confidence: 0.88,
-          feedback: "✓ Supported fist on open palm detected. Help sign recognized!",
-          handsCount: hands.length,
-        };
-      }
+    // NAMASTE: Joined palms or close proximity of index tips/wrists at chest level
+    if (wristDist < 0.48 || indexTipDist < 0.42 || middleMcpDist < 0.40) {
+      return {
+        sign: "Namaste",
+        confidence: 0.94,
+        feedback: "✓ Both palms joined in Anjali Mudra posture. Namaste sign recognized!",
+        handsCount: hands.length,
+      };
     }
 
     return {
       sign: "Namaste",
-      confidence: 0.76,
-      feedback: "Two hands detected. Bring palms closer together for Namaste.",
+      confidence: 0.82,
+      feedback: "Two hands in frame. Bring palms together for Namaste.",
       handsCount: hands.length,
     };
   }
 
   // ----------------------------------------------------
-  // ONE HAND GESTURES
+  // ONE-HAND GESTURES (Thank You, Emergency, Doctor, No, Yes, Hello)
   // ----------------------------------------------------
   const pts = hands[0].landmarks;
 
@@ -157,70 +146,72 @@ export function classifyISLGesture(hands: HandData[]): PredictionResult {
   const pinkyExt = isFingerExtended(pts, 20, 18);
 
   const extendedCount = [thumbExt, indexExt, middleExt, ringExt, pinkyExt].filter(Boolean).length;
+  const wristY = pts[0].y;
+  const indexTipY = pts[8].y;
 
-  // HELLO: All 5 fingers extended, palm facing forward
-  if (extendedCount >= 4) {
+  // EMERGENCY: Raised fist near upper portion of camera frame
+  if (extendedCount <= 2 && (wristY < 0.52 || indexTipY < 0.45)) {
     return {
-      sign: "Hello",
-      confidence: 0.89,
-      feedback: "✓ Open palm raised with fingers extended. Hello sign recognized!",
+      sign: "Emergency",
+      confidence: 0.88,
+      feedback: "✓ Raised fist posture detected near shoulder/head. Emergency sign recognized!",
       handsCount: 1,
     };
   }
 
-  // THANK YOU: Open palm extended forward (3-4 fingers open near upper half of frame)
-  if (indexExt && middleExt && ringExt && pts[8].y < 0.5) {
+  // THANK YOU: Open palm near upper frame/chin height
+  if (extendedCount >= 3 && indexTipY < 0.55 && (indexExt && middleExt && ringExt)) {
     return {
       sign: "Thank You",
-      confidence: 0.84,
-      feedback: "✓ Open hand moving forward from chin height. Thank You sign recognized!",
+      confidence: 0.90,
+      feedback: "✓ Open hand gesture near chin/face height. Thank You sign recognized!",
       handsCount: 1,
     };
   }
 
-  // YES: Closed fist (all fingers flexed down)
+  // NO: Index & Middle fingers extended together, Ring & Pinky flexed
+  if (indexExt && middleExt && !ringExt && !pinkyExt) {
+    return {
+      sign: "No",
+      confidence: 0.89,
+      feedback: "✓ Index and middle fingers extended in V/pinch posture. No sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // DOCTOR: Index finger pointing downward/toward wrist pulse
+  if (indexExt && !middleExt && !ringExt && !pinkyExt) {
+    return {
+      sign: "Doctor",
+      confidence: 0.87,
+      feedback: "✓ Single index finger pointing gesture detected. Doctor sign recognized!",
+      handsCount: 1,
+    };
+  }
+
+  // YES: Closed fist gesture
   if (extendedCount <= 1 && !indexExt && !middleExt) {
     return {
       sign: "Yes",
-      confidence: 0.86,
+      confidence: 0.88,
       feedback: "✓ Closed fist gesture detected. Yes sign recognized!",
       handsCount: 1,
     };
   }
 
-  // NO: Index and middle finger extended, thumb touching them
-  if (indexExt && middleExt && !ringExt && !pinkyExt) {
+  // HELLO: Open palm with 4+ fingers extended raised in view
+  if (extendedCount >= 4) {
     return {
-      sign: "No",
-      confidence: 0.85,
-      feedback: "✓ Index and middle fingers extended. No sign recognized!",
-      handsCount: 1,
-    };
-  }
-
-  // DOCTOR: Index finger extended pointing toward wrist
-  if (indexExt && !middleExt && !ringExt && !pinkyExt) {
-    return {
-      sign: "Doctor",
-      confidence: 0.82,
-      feedback: "✓ Index finger pointing posture detected. Doctor sign recognized!",
-      handsCount: 1,
-    };
-  }
-
-  // EMERGENCY: Raised fist near top of frame
-  if (extendedCount <= 2 && pts[0].y < 0.4) {
-    return {
-      sign: "Emergency",
-      confidence: 0.80,
-      feedback: "✓ Raised hand posture detected. Emergency sign recognized!",
+      sign: "Hello",
+      confidence: 0.92,
+      feedback: "✓ Open palm raised with fingers extended. Hello sign recognized!",
       handsCount: 1,
     };
   }
 
   return {
     sign: "Searching...",
-    confidence: 0.45,
+    confidence: 0.50,
     feedback: "Hand detected. Hold your sign posture steadily for recognition.",
     handsCount: 1,
   };
@@ -234,7 +225,7 @@ export class PredictionStabilityFilter {
   private windowSize: number;
   private minConsecutive: number;
 
-  constructor(windowSize = 7, minConsecutive = 4) {
+  constructor(windowSize = 5, minConsecutive = 3) {
     this.windowSize = windowSize;
     this.minConsecutive = minConsecutive;
   }
