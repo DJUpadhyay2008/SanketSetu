@@ -26,13 +26,28 @@ export default function AppShell({ children }: AppShellProps) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
+  // Profile Onboarding Form States
+  const [authName, setAuthName] = useState("");
+  const [authCategory, setAuthCategory] = useState("Deaf / Hard of Hearing");
+  const [authState, setAuthState] = useState("Gujarat");
+  const [authCity, setAuthCity] = useState("");
+  const [authIslLevel, setAuthIslLevel] = useState("1");
+  const [authGender, setAuthGender] = useState("Prefer not to say");
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
     setAuthSubmitting(true);
     try {
       if (isRegisterMode) {
-        await registerWithEmail(authEmail, authPassword);
+        await registerWithEmail(authEmail, authPassword, {
+          display_name: authName.trim() || authEmail.split('@')[0],
+          disability_category: authCategory,
+          state: authState,
+          city: authCity.trim(),
+          isl_level: authIslLevel,
+          gender: authGender,
+        });
       } else {
         await loginWithEmail(authEmail, authPassword);
       }
@@ -494,6 +509,105 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           )}
 
+          {isRegisterMode && (
+            <>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Full / Display Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={authName}
+                  onChange={(e) => setAuthName(e.target.value)}
+                  placeholder="e.g. Sanket User"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    Category / Role
+                  </label>
+                  <select
+                    value={authCategory}
+                    onChange={(e) => setAuthCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="Deaf / Hard of Hearing">Deaf / Hard of Hearing</option>
+                    <option value="DeafBlind / Tactile Signer">DeafBlind / Tactile Signer</option>
+                    <option value="CODA (Child of Deaf Adult)">CODA (Child of Deaf Adult)</option>
+                    <option value="Hearing Ally / Friend">Hearing Ally / Friend</option>
+                    <option value="ISL Learner / Advocate">ISL Learner / Advocate</option>
+                    <option value="Certified Interpreter">Certified Interpreter</option>
+                    <option value="Civic / Healthcare Officer">Civic / Healthcare Officer</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    State / UT
+                  </label>
+                  <select
+                    value={authState}
+                    onChange={(e) => setAuthState(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    {["Gujarat", "Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Uttar Pradesh", "Rajasthan", "West Bengal", "Telangana", "Kerala", "Punjab", "Madhya Pradesh", "Haryana", "Bihar", "Odisha", "Central"].map(st => (
+                      <option key={st} value={st}>{st}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={authCity}
+                    onChange={(e) => setAuthCity(e.target.value)}
+                    placeholder="e.g. Ahmedabad"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    Gender
+                  </label>
+                  <select
+                    value={authGender}
+                    onChange={(e) => setAuthGender(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="Prefer not to say">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-Binary">Non-Binary</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  ISL Skill Level
+                </label>
+                <select
+                  value={authIslLevel}
+                  onChange={(e) => setAuthIslLevel(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="Level 1 (Beginner)">Level 1 - Beginner (Everyday Signs & Alphabet)</option>
+                  <option value="Level 2 (Intermediate)">Level 2 - Intermediate (Healthcare & Emergency)</option>
+                  <option value="Level 3 (Advanced)">Level 3 - Advanced / Fluent (Civic & Professional)</option>
+                </select>
+              </div>
+            </>
+          )}
+
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
               Email Address
@@ -533,7 +647,7 @@ export default function AppShell({ children }: AppShellProps) {
               {authSubmitting
                 ? "Processing..."
                 : isRegisterMode
-                ? "Create Account"
+                ? "Create Account & Setup Profile"
                 : "Sign In"}
             </Button>
 
@@ -548,7 +662,7 @@ export default function AppShell({ children }: AppShellProps) {
               >
                 {isRegisterMode
                   ? "Already have an account? Sign in here"
-                  : "Need an account? Register with email"}
+                  : "Need an account? Register with profile details"}
               </button>
             </div>
           </div>

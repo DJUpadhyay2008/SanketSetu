@@ -34,7 +34,7 @@ interface AuthContextType {
   account: UserAccount | null; // Sanket Setu user account
   loading: boolean;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, initialProfile?: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (updatedFields: Partial<UserProfile>) => Promise<UserProfile>;
@@ -113,9 +113,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const createLocalSession = (email: string) => {
+  const createLocalSession = (email: string, initialProfile?: Partial<UserProfile>) => {
     const username = email.split('@')[0] || "User";
-    const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+    const displayName = initialProfile?.display_name || (username.charAt(0).toUpperCase() + username.slice(1));
     
     const mockUser = {
       id: 'usr_' + Math.random().toString(36).substring(2, 10),
@@ -125,10 +125,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const mockProfile: UserProfile = {
       id: mockUser.id,
       display_name: displayName,
-      avatar_url: null,
-      isl_level: 'Level 1 (Beginner)',
+      avatar_url: initialProfile?.avatar_url || null,
+      gender: initialProfile?.gender || 'Prefer not to say',
+      dob: initialProfile?.dob || '',
+      state: initialProfile?.state || 'Gujarat',
+      city: initialProfile?.city || '',
+      phone: initialProfile?.phone || '',
+      bio: initialProfile?.bio || '',
+      disability_category: initialProfile?.disability_category || 'Deaf / Hard of Hearing',
+      isl_level: initialProfile?.isl_level || 'Level 1 (Beginner)',
       badges: ['ISL Pioneer', 'Verified Citizen'],
-      interests: ['Sign Language', 'Accessibility'],
+      interests: initialProfile?.interests || ['Everyday Communication', 'Healthcare ISL'],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -180,12 +187,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const registerWithEmail = async (email: string, password: string) => {
+  const registerWithEmail = async (email: string, password: string, initialProfile?: Partial<UserProfile>) => {
     setLoading(true);
 
     // Fallback if Supabase is unconfigured
     if (supabaseUrl.includes('placeholder')) {
-      createLocalSession(email);
+      createLocalSession(email, initialProfile);
       return;
     }
 
@@ -196,17 +203,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          data: {
+            full_name: initialProfile?.display_name,
+            state: initialProfile?.state,
+            disability_category: initialProfile?.disability_category
+          }
         },
       });
       if (error) throw error;
       if (data?.user && !data?.session) {
-        createLocalSession(email);
+        createLocalSession(email, initialProfile);
         return;
       }
       setUser(data.user);
+      if (initialProfile) {
+        try {
+          await putToApi<UserProfile>("/users/profile", initialProfile);
+        } catch {
+          // ignore
+        }
+      }
     } catch (err: any) {
       // If network fetch failed or Supabase connection unreachable, fallback gracefully to local session
-      createLocalSession(email);
+      createLocalSession(email, initialProfile);
       return;
     }
   };
