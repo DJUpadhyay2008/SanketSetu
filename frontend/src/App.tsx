@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AppShell from './layouts/AppShell'
 import { AuthProvider } from './hooks/useAuth'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy-loaded pages for code-splitting / performance
 const Home         = lazy(() => import('./pages/Home'))
@@ -68,23 +69,25 @@ function App() {
             {/* Main Application Routes inside AppShell */}
             <Route path="/*" element={
               <AppShell>
-                <Suspense fallback={<PageSkeleton />}>
-                  <Routes>
-                    <Route path="/"           element={<Home />} />
-                    <Route path="/learn"      element={<Learn />} />
-                    <Route path="/schemes"    element={<Schemes />} />
-                    <Route path="/assist"     element={<Assist />} />
-                    <Route path="/assist/:category/:slug" element={<AssistPortal />} />
-                    <Route path="/institution" element={<Institution />} />
-                    <Route path="/passport"   element={<Passport />} />
-                    <Route path="/community"  element={<Community />} />
-                    <Route path="/leaderboard" element={<Leaderboard />} />
-                    <Route path="/offline"    element={<OfflineManager />} />
-                    <Route path="/live"       element={<SanketLive />} />
-                    <Route path="/settings"   element={<Settings />} />
-                    <Route path="*"           element={<NotFound />} />
-                  </Routes>
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<PageSkeleton />}>
+                    <Routes>
+                      <Route path="/"           element={<Home />} />
+                      <Route path="/learn"      element={<Learn />} />
+                      <Route path="/schemes"    element={<Schemes />} />
+                      <Route path="/assist"     element={<Assist />} />
+                      <Route path="/assist/:category/:slug" element={<AssistPortal />} />
+                      <Route path="/institution" element={<Institution />} />
+                      <Route path="/passport"   element={<Passport />} />
+                      <Route path="/community"  element={<Community />} />
+                      <Route path="/leaderboard" element={<Leaderboard />} />
+                      <Route path="/offline"    element={<OfflineManager />} />
+                      <Route path="/live"       element={<SanketLive />} />
+                      <Route path="/settings"   element={<Settings />} />
+                      <Route path="*"           element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </ErrorBoundary>
               </AppShell>
             } />
           </Routes>

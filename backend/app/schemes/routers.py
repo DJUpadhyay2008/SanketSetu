@@ -25,6 +25,10 @@ class SchemeOutline(BaseModel):
     title: str
     description: str
     department: str
+    benefits: Optional[str] = None
+    eligibility: Optional[str] = None
+    documents: Optional[List[str]] = []
+    application_method: Optional[str] = "Online"
     state: str
     category: str
     official_url: Optional[str] = None
@@ -187,6 +191,10 @@ async def list_schemes(
             title=s.title,
             description=s.description,
             department=s.department,
+            benefits=s.benefits,
+            eligibility=s.eligibility,
+            documents=s.documents or [],
+            application_method=s.application_method or "Online",
             state=s.state,
             category=s.category,
             official_url=s.official_url,
@@ -238,7 +246,7 @@ async def evaluate_eligibility(
     results = []
     
     # Convert profile pydantic model to dict
-    profile_dict = profile.dict()
+    profile_dict = profile.model_dump()
     
     for s in schemes:
         rules = s.eligibility_rules

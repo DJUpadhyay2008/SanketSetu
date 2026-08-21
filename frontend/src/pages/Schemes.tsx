@@ -369,11 +369,17 @@ export default function Schemes() {
 
   // Filter schemes in Directory tab
   const filteredSchemes = schemes.filter(s => {
-    const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          s.department.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "ALL" || s.category.toUpperCase() === selectedCategory.toUpperCase();
-    const matchesState = selectedState === "ALL" || s.state.toUpperCase() === selectedState.toUpperCase();
+    const title = s?.title || "";
+    const description = s?.description || "";
+    const department = s?.department || "";
+    const category = s?.category || "";
+    const state = s?.state || "";
+
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          department.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "ALL" || category.toUpperCase() === selectedCategory.toUpperCase();
+    const matchesState = selectedState === "ALL" || state.toUpperCase() === selectedState.toUpperCase();
     return matchesSearch && matchesCategory && matchesState;
   });
 
