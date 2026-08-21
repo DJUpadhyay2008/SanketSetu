@@ -33,21 +33,47 @@ export default function Verify() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+
+    const getStoredProfile = () => {
+      try {
+        const session = localStorage.getItem('sanket_demo_session');
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed?.profile) return parsed.profile;
+        }
+      } catch {}
+      return null;
+    };
+
+    const localProf = getStoredProfile();
+
     fetchFromApi<VerificationResponse>(`/passport/verify/${id}`)
       .then((res) => {
-        setData(res);
+        // Merge stored user profile if response contains generic placeholders
+        const mergedData: VerificationResponse = {
+          ...res,
+          recipient_name: (res.recipient_name && res.recipient_name !== "Sanket Citizen" && res.recipient_name !== "Dutt") 
+            ? res.recipient_name 
+            : (localProf?.display_name || res.recipient_name || "Sanket Citizen"),
+          gender: localProf?.gender || res.gender || "Male",
+          dob: localProf?.dob || res.dob || "2008-03-08",
+          state: localProf?.state || res.state || "Gujarat",
+          city: localProf?.city || res.city || "Vadodara",
+          disability_category: localProf?.disability_category || res.disability_category || "Deaf / Hard of Hearing",
+        };
+        setData(mergedData);
         setLoading(false);
       })
       .catch(() => {
-        // Fallback verification response for offline mode or demo credentials
+        // Fallback verification response for offline mode or demo credentials with real profile data
         setData({
           is_valid: true,
-          recipient_name: "Dutt",
-          gender: "Male",
-          dob: "2008-03-08",
-          state: "Gujarat",
-          city: "Vadodara",
-          disability_category: "Deaf / Hard of Hearing",
+          recipient_name: localProf?.display_name || "Sanket Citizen",
+          gender: localProf?.gender || "Male",
+          dob: localProf?.dob || "2008-03-08",
+          state: localProf?.state || "Gujarat",
+          city: localProf?.city || "Vadodara",
+          disability_category: localProf?.disability_category || "Deaf / Hard of Hearing",
           course_name: "Everyday ISL Greetings & Accessibility Essentials",
           issue_date: new Date().toISOString(),
           grade: "A+",

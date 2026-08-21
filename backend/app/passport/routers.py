@@ -195,17 +195,18 @@ async def verify_credential_public(
     cred = db.query(models.Credential).filter(models.Credential.id == cred_uuid).first()
     if not cred:
         if credential_id in ("00000000-0000-0000-0000-000000000000", "88888888-8888-4888-8888-88888888888f"):
-            demo_name = "Sanket Citizen"
+            latest_prof = db.query(models.Profile).first()
+            demo_name = latest_prof.display_name if (latest_prof and latest_prof.display_name) else "Sanket Citizen"
             return VerificationResponse(
                 is_valid=True,
                 recipient_name=demo_name,
                 recipient_masked_name=mask_name(demo_name),
-                avatar_url=None,
-                gender="Male",
-                dob="2008-03-08",
-                state="Gujarat",
-                city="Vadodara",
-                disability_category="Deaf / Hard of Hearing",
+                avatar_url=latest_prof.avatar_url if latest_prof else None,
+                gender=latest_prof.gender if (latest_prof and latest_prof.gender) else "Male",
+                dob=latest_prof.dob if (latest_prof and latest_prof.dob) else "2008-03-08",
+                state=latest_prof.state if (latest_prof and latest_prof.state) else "Gujarat",
+                city=latest_prof.city if (latest_prof and latest_prof.city) else "Vadodara",
+                disability_category=latest_prof.disability_category if (latest_prof and latest_prof.disability_category) else "Deaf / Hard of Hearing",
                 course_name="Everyday ISL Greetings",
                 issue_date=date.today(),
                 grade="A+",
