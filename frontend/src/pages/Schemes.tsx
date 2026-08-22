@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { fetchFromApi } from "../api/client";
 import { 
   Send, HelpCircle, Sparkles, Loader2, 
-  Search, ShieldCheck, FileText, ExternalLink, ChevronDown, ChevronUp, UserCheck, RefreshCw
+  Search, ShieldCheck, FileText, ExternalLink, ChevronDown, ChevronUp, UserCheck, RefreshCw,
+  Key, Eye, EyeOff, Check
 } from "lucide-react";
 import { 
   Card, LoadingState, Badge, Button
@@ -297,6 +298,31 @@ export default function Schemes() {
   }[]>([]);
   const [asking, setAsking] = useState(false);
 
+  // Custom API Key State (OpenRouter or Google Gemini)
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("sanket_policy_api_key") || "");
+  const [apiProvider, setApiProvider] = useState<"openrouter" | "google">(() => (localStorage.getItem("sanket_policy_api_provider") as any) || "openrouter");
+  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [keySaved, setKeySaved] = useState<boolean>(false);
+
+  const handleSaveKey = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem("sanket_policy_api_key", apiKey.trim());
+      localStorage.setItem("sanket_policy_api_provider", apiProvider);
+    } else {
+      localStorage.removeItem("sanket_policy_api_key");
+      localStorage.removeItem("sanket_policy_api_provider");
+    }
+    setKeySaved(true);
+    setTimeout(() => setKeySaved(false), 2000);
+  };
+
+  const handleClearKey = () => {
+    setApiKey("");
+    localStorage.removeItem("sanket_policy_api_key");
+    localStorage.removeItem("sanket_policy_api_provider");
+  };
+
   // Fetch initial schemes list
   useEffect(() => {
     fetchFromApi<Scheme[]>("/schemes")
@@ -345,7 +371,9 @@ export default function Schemes() {
         method: "POST",
         body: JSON.stringify({
           message: queryToSend,
-          history: historyPayload
+          history: historyPayload,
+          user_api_key: apiKey.trim() || undefined,
+          user_provider: apiProvider
         }),
       });
 
@@ -894,7 +922,112 @@ export default function Schemes() {
         </div>
 
         {/* Right Column: AI Assistant Chatbot */}
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* USER API KEY CONFIGURATION BOX */}
+          <div className="rounded-2xl border border-emerald-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <button 
+                type="button"
+                onClick={() => setShowKeyInput(!showKeyInput)}
+                className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-pointer"
+              >
+                <Key className="h-4 w-4 text-amber-500" />
+                <span>Custom AI Key</span>
+                <span className="text-[10px] text-slate-400 font-bold">({showKeyInput ? "Close" : "Configure"})</span>
+              </button>
+
+              {/* Status Badge */}
+              {apiKey.trim() ? (
+                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                  apiProvider === "google" 
+                    ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30" 
+                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                }`}>
+                  {apiProvider === "google" ? "Google Gemini Key" : "OpenRouter Key"}
+                </span>
+              ) : (
+                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">
+                  Server Default Key
+                </span>
+              )}
+            </div>
+
+            {showKeyInput && (
+              <div className="space-y-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                {/* Provider Selector */}
+                <div className="flex items-center justify-between text-2xs">
+                  <span className="font-extrabold uppercase tracking-wider text-slate-400">Provider:</span>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setApiProvider("openrouter")}
+                      className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        apiProvider === "openrouter"
+                          ? "bg-teal-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                      }`}
+                    >
+                      OpenRouter
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setApiProvider("google")}
+                      className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        apiProvider === "google"
+                          ? "bg-blue-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                      }`}
+                    >
+                      Google Gemini
+                    </button>
+                  </div>
+                </div>
+
+                {/* Key Input */}
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder={apiProvider === "google" ? "Enter Gemini Key (AIzaSy...)" : "Enter OpenRouter Key (sk-or-v1-...)"}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3 py-2 pr-10 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title={showPassword ? "Hide key" : "Show key"}
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+
+                <div className="flex justify-between items-center text-2xs">
+                  <p className="text-slate-400 italic">Key saved in browser storage.</p>
+                  <div className="flex gap-2">
+                    {apiKey && (
+                      <button
+                        type="button"
+                        onClick={handleClearKey}
+                        className="px-2 py-1 text-rose-500 hover:text-rose-600 font-bold cursor-pointer"
+                      >
+                        Clear Key
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSaveKey}
+                      className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      {keySaved ? <Check className="h-3 w-3" /> : null}
+                      {keySaved ? "Saved!" : "Apply Key"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="rounded-2xl border border-emerald-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col h-[540px]">
             {/* Header */}
             <div className="bg-gradient-to-r from-emerald-800 to-teal-900 p-4 text-white flex items-center gap-2.5 shadow-xs">

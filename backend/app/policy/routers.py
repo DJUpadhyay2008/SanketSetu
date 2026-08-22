@@ -41,6 +41,8 @@ class ChatMessage(BaseModel):
 class PolicyChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
+    user_api_key: Optional[str] = None
+    user_provider: Optional[str] = "openrouter" # "openrouter" | "google"
 
 class SchemeSource(BaseModel):
     title: str
@@ -56,7 +58,7 @@ class PolicyChatResponse(BaseModel):
     verification_status: str = "verified"  # "verified" | "partially_verified" | "not_verified"
 
 # ==========================================
-# SYSTEM PROMPT FOR GLM 5.2
+# SYSTEM PROMPT FOR GLM 5.2 & LLMs
 # ==========================================
 SYSTEM_PROMPT = """You are the Sanket Setu Policy Assistant.
 
@@ -143,7 +145,7 @@ async def policy_chat(
     db: Session = Depends(get_db)
 ):
     """
-    OpenRouter GLM-5.2 powered grounded RAG assistant endpoint.
+    RAG policy assistant supporting server fallback & dynamic custom user API keys (OpenRouter or Google Gemini).
     Strictly answers using verified Supabase scheme data.
     """
     client_ip = request.client.host if request.client else "127.0.0.1"
@@ -160,79 +162,147 @@ async def policy_chat(
             verification_status="not_verified"
         )
 
-    if not settings.OPENROUTER_API_KEY:
-        return PolicyChatResponse(
-            answer="Policy Assistant is temporarily unavailable. Please try again.",
-            verification_status="not_verified"
-        )
+    user_api_key = (req.user_api_key or "").strip()
+    user_provider = (req.user_provider or "openrouter").lower().strip()
 
     context_text, valid_urls, official_urls_map = get_verified_schemes_context(db)
 
-    messages = [
-        {"role": "system", "content": f"{SYSTEM_PROMPT}\n\nVERIFIED CONTEXT:\n{context_text}"}
-    ]
+    raw_content = ""
 
-    if req.history:
-        for msg in req.history[-6:]:
-            if msg.role in ("user", "assistant") and msg.content:
-                messages.append({"role": msg.role, "content": msg.content})
+    # ----------------------------------------------------
+    # PATH A: GOOGLE GEMINI CUSTOM KEY
+    # ----------------------------------------------------
+    if user_api_key and user_provider in ("google", "gemini"):
+        gemini_prompt = f"{SYSTEM_PROMPT}\n\nVERIFIED CONTEXT:\n{context_text}\n\nCONVERSATION HISTORY:\n"
+        if req.history:
+            for msg in req.history[-6:]:
+                if msg.role in ("user", "assistant") and msg.content:
+                    gemini_prompt += f"{msg.role.upper()}: {msg.content}\n"
+        gemini_prompt += f"\nUSER QUERY: {user_query}\n\nReturn response ONLY as valid raw JSON object matching the exact schema."
 
-    messages.append({"role": "user", "content": user_query})
+        gemini_payload = {
+            "contents": [
+                {
+                    "parts": [{"text": gemini_prompt}]
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "temperature": 0.1
+            }
+        }
 
-    headers = {
-        "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://sanketsetu.in",
-        "X-Title": "Sanket Setu Policy Assistant"
-    }
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                g_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={user_api_key}"
+                resp = await client.post(g_url, json=gemini_payload)
+                if resp.status_code != 200:
+                    g_url_fallback = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={user_api_key}"
+                    resp = await client.post(g_url_fallback, json=gemini_payload)
 
-    candidate_models = [
-        settings.OPENROUTER_MODEL,
-        "openai/gpt-oss-20b:free",
-        "nvidia/nemotron-3-nano-30b-a3b:free",
-        "google/gemma-4-31b-it:free"
-    ]
+                if resp.status_code != 200:
+                    print(f"Gemini custom key error {resp.status_code}: {resp.text}")
+                    return PolicyChatResponse(
+                        answer="Invalid Google Gemini API Key or quota limit reached. Please check your key.",
+                        verification_status="not_verified"
+                    )
 
-    payload = {
-        "model": settings.OPENROUTER_MODEL,
-        "messages": messages,
-        "temperature": 0.1,
-        "response_format": {"type": "json_object"}
-    }
-
-    try:
-        resp = None
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            for model in candidate_models:
-                payload["model"] = model
-                resp = await client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-                print(f"OPENROUTER ({model}) RESP:", resp.status_code)
-                if resp.status_code == 200:
-                    break
-                elif resp.status_code == 429:
-                    import asyncio
-                    await asyncio.sleep(1.0)
-
-        if not resp or resp.status_code == 429:
+                res_data = resp.json()
+                raw_content = res_data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as e:
+            print(f"Gemini API Exception: {e}")
             return PolicyChatResponse(
-                answer="Please wait a moment before sending another question.",
+                answer="Failed to connect with provided Google Gemini API Key.",
                 verification_status="not_verified"
             )
-        elif resp.status_code != 200:
-            print(f"OpenRouter API error {resp.status_code}: {resp.text}")
+
+    # ----------------------------------------------------
+    # PATH B: OPENROUTER (CUSTOM KEY OR SERVER DEFAULT)
+    # ----------------------------------------------------
+    else:
+        effective_key = user_api_key if user_api_key else settings.OPENROUTER_API_KEY
+        if not effective_key:
+            return PolicyChatResponse(
+                answer="Policy Assistant API key is not configured. Please enter your OpenRouter or Google Gemini API key above.",
+                verification_status="not_verified"
+            )
+
+        messages = [
+            {"role": "system", "content": f"{SYSTEM_PROMPT}\n\nVERIFIED CONTEXT:\n{context_text}"}
+        ]
+
+        if req.history:
+            for msg in req.history[-6:]:
+                if msg.role in ("user", "assistant") and msg.content:
+                    messages.append({"role": msg.role, "content": msg.content})
+
+        messages.append({"role": "user", "content": user_query})
+
+        headers = {
+            "Authorization": f"Bearer {effective_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://sanketsetu.in",
+            "X-Title": "Sanket Setu Policy Assistant"
+        }
+
+        candidate_models = [
+            settings.OPENROUTER_MODEL,
+            "openai/gpt-oss-20b:free",
+            "nvidia/nemotron-3-nano-30b-a3b:free",
+            "google/gemma-4-31b-it:free"
+        ]
+
+        payload = {
+            "model": settings.OPENROUTER_MODEL,
+            "messages": messages,
+            "temperature": 0.1,
+            "response_format": {"type": "json_object"}
+        }
+
+        try:
+            resp = None
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                for model in candidate_models:
+                    payload["model"] = model
+                    resp = await client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+                    print(f"OPENROUTER ({model}) RESP:", resp.status_code)
+                    if resp.status_code == 200:
+                        break
+                    elif resp.status_code in (401, 403) and user_api_key:
+                        return PolicyChatResponse(
+                            answer="Invalid OpenRouter API Key provided. Please check your key or clear it to use server defaults.",
+                            verification_status="not_verified"
+                        )
+                    elif resp.status_code == 429:
+                        import asyncio
+                        await asyncio.sleep(1.0)
+
+            if not resp or resp.status_code == 429:
+                return PolicyChatResponse(
+                    answer="Please wait a moment before sending another question.",
+                    verification_status="not_verified"
+                )
+            elif resp.status_code != 200:
+                print(f"OpenRouter API error {resp.status_code}: {resp.text}")
+                return PolicyChatResponse(
+                    answer="Policy Assistant is temporarily unavailable. Please try again.",
+                    verification_status="not_verified"
+                )
+
+            res_data = resp.json()
+            if not res_data.get("choices") or len(res_data["choices"]) == 0:
+                return PolicyChatResponse(
+                    answer="Policy Assistant is temporarily unavailable. Please try again.",
+                    verification_status="not_verified"
+                )
+
+            raw_content = res_data["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"OpenRouter API Exception: {e}")
             return PolicyChatResponse(
                 answer="Policy Assistant is temporarily unavailable. Please try again.",
                 verification_status="not_verified"
             )
-
-        res_data = resp.json()
-        if not res_data.get("choices") or len(res_data["choices"]) == 0:
-            return PolicyChatResponse(
-                answer="Policy Assistant is temporarily unavailable. Please try again.",
-                verification_status="not_verified"
-            )
-
-        raw_content = res_data["choices"][0]["message"]["content"]
 
         cleaned_content = raw_content.strip()
         if cleaned_content.startswith("```json"):

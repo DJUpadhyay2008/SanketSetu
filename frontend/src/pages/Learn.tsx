@@ -851,7 +851,7 @@ export default function Learn() {
     setLoading(true);
     fetchFromApi<Course[]>("/learning/courses")
       .then((data) => {
-        setCourses(data && data.length > 0 ? data : INITIAL_COURSES);
+        setCourses(Array.isArray(data) && data.length > 0 ? data : INITIAL_COURSES);
         setError(null);
         setLoading(false);
       })
