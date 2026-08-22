@@ -260,7 +260,7 @@ export const Modal: React.FC<ModalProps> = ({
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
-      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
         <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{title}</h2>
           <button 
@@ -271,7 +271,7 @@ export const Modal: React.FC<ModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto max-h-[60vh] text-sm text-slate-650 dark:text-slate-350 space-y-4">
+        <div className="p-6 overflow-y-auto max-h-[82vh] text-sm text-slate-650 dark:text-slate-350 space-y-4">
           {children}
         </div>
         {footer && (
