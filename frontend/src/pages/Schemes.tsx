@@ -924,47 +924,54 @@ export default function Schemes() {
         {/* Right Column: AI Assistant Chatbot */}
         <div className="space-y-4">
           {/* USER API KEY CONFIGURATION BOX */}
-          <div className="rounded-2xl border border-emerald-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-sm">
-            <div className="flex items-center justify-between">
+          <div className="rounded-2xl border border-emerald-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-3 shadow-xs">
+            {/* Header row */}
+            <div className="flex items-center justify-between gap-2">
               <button 
                 type="button"
                 onClick={() => setShowKeyInput(!showKeyInput)}
-                className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-pointer shrink-0"
               >
-                <Key className="h-4 w-4 text-amber-500" />
+                <Key className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                 <span>Custom AI Key</span>
-                <span className="text-[10px] text-slate-400 font-bold">({showKeyInput ? "Close" : "Configure"})</span>
+                <span className="text-[10px] text-slate-400 font-semibold">{showKeyInput ? "▲" : "▼"}</span>
               </button>
 
               {/* Status Badge */}
-              {apiKey.trim() ? (
-                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                  apiProvider === "google" 
-                    ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30" 
-                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                }`}>
-                  {apiProvider === "google" ? "Google Gemini Key" : "OpenRouter Key"}
-                </span>
-              ) : (
-                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">
-                  Server Default Key
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowKeyInput(!showKeyInput)}
+                className="cursor-pointer shrink-0"
+              >
+                {apiKey.trim() ? (
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-tight ${
+                    apiProvider === "google" 
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25" 
+                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                  }`}>
+                    {apiProvider === "google" ? "Gemini Key" : "OpenRouter Key"}
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-tight bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">
+                    Server Default
+                  </span>
+                )}
+              </button>
             </div>
 
             {showKeyInput && (
               <div className="space-y-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
-                {/* Provider Selector */}
-                <div className="flex items-center justify-between text-2xs">
-                  <span className="font-extrabold uppercase tracking-wider text-slate-400">Provider:</span>
-                  <div className="flex gap-1.5">
+                {/* Segmented Provider Control */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Select Provider</label>
+                  <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
                     <button
                       type="button"
                       onClick={() => setApiProvider("openrouter")}
-                      className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`py-1.5 px-2 rounded-lg text-2xs font-extrabold transition-all cursor-pointer text-center ${
                         apiProvider === "openrouter"
                           ? "bg-teal-600 text-white shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                          : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
                       }`}
                     >
                       OpenRouter
@@ -972,10 +979,10 @@ export default function Schemes() {
                     <button
                       type="button"
                       onClick={() => setApiProvider("google")}
-                      className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`py-1.5 px-2 rounded-lg text-2xs font-extrabold transition-all cursor-pointer text-center ${
                         apiProvider === "google"
                           ? "bg-blue-600 text-white shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                          : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
                       }`}
                     >
                       Google Gemini
@@ -984,34 +991,40 @@ export default function Schemes() {
                 </div>
 
                 {/* Key Input */}
-                <div className="relative flex items-center">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder={apiProvider === "google" ? "Enter Gemini Key (AIzaSy...)" : "Enter OpenRouter Key (sk-or-v1-...)"}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3 py-2 pr-10 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    title={showPassword ? "Hide key" : "Show key"}
-                  >
-                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                    {apiProvider === "google" ? "Gemini API Key" : "OpenRouter API Key"}
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder={apiProvider === "google" ? "AIzaSy..." : "sk-or-v1-..."}
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3 py-2 pr-9 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                      title={showPassword ? "Hide key" : "Show key"}
+                    >
+                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex justify-between items-center text-2xs">
-                  <p className="text-slate-400 italic">Key saved in browser storage.</p>
-                  <div className="flex gap-2">
+                {/* Buttons */}
+                <div className="flex justify-between items-center text-2xs pt-1">
+                  <span className="text-[10px] text-slate-400 italic">Stored in browser</span>
+                  <div className="flex items-center gap-1.5">
                     {apiKey && (
                       <button
                         type="button"
                         onClick={handleClearKey}
-                        className="px-2 py-1 text-rose-500 hover:text-rose-600 font-bold cursor-pointer"
+                        className="px-2 py-1 text-rose-500 hover:text-rose-600 font-extrabold cursor-pointer"
                       >
-                        Clear Key
+                        Clear
                       </button>
                     )}
                     <button
@@ -1020,7 +1033,7 @@ export default function Schemes() {
                       className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                     >
                       {keySaved ? <Check className="h-3 w-3" /> : null}
-                      {keySaved ? "Saved!" : "Apply Key"}
+                      {keySaved ? "Saved!" : "Apply"}
                     </button>
                   </div>
                 </div>
